@@ -39,6 +39,6 @@ while true; do
 		gpt_ping "$preset" "$content" -l $MAX_TOKENS -t $TIMEOUT | glow -s '/home/amda/.config/glow/gpt_style.json'
 		unset preset
 	else
-		gpt_ping "$content" -m "$(cat $SCRIPT_DIR/discussion.txt)" -l $MAX_TOKENS -t $TIMEOUT | glow -s '/home/amda/.config/glow/gpt_style.json'
+		gpt_ping "$content" -m "$(cat $SCRIPT_DIR/log/discussion.txt)" -l $MAX_TOKENS -t $TIMEOUT | glow -s '/home/amda/.config/glow/gpt_style.json'
 	fi
 done
