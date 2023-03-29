@@ -105,7 +105,7 @@ content_assistant = send_request(data)
 message = {"role": "assistant", "content": content_assistant}
 discussion.append(message)
 
-with open(f'{script_dir}/discussion.txt', 'w') as file:
+with open(f'{script_dir}/log/discussion.txt', 'w') as file:
     file.write(str(discussion))
 
 print(content_assistant)
