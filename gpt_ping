@@ -7,8 +7,10 @@ import os
 import subprocess
 from parser import parse_code
 
+# Get the path to the directory were this file is located
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
+# Number of times a request will be attempted to
 max_number_of_tries = 3
 
 # gets the api key
@@ -25,40 +27,45 @@ headers = {
 }
 
 
-def send_request(data):
-    number_of_tries = 0
-    while number_of_tries < max_number_of_tries:
+def send_request(data, headers, backend):
+    '''Attempts to send the request to the backend'''
+    for _ in range(max_number_of_tries):
         response = requests.post(endpoint,
                                  headers=headers,
                                  data=json.dumps(data),
                                  timeout=args.t)
+        match response.status_code:
+            case 200:
+                message = response.json()['choices'][-1]['message']['content']
+                return message
+            case _:
+                print(f"an oupise of type {response.status_code} happend, retrying...")
 
-        if 'choices' in response.json():
-            message = response.json()['choices'][-1]['message']['content']
-            return message
-        number_of_tries += 1
-
-    print(response)
-    print(response.json())
     sys.exit(1)
 
 
 # Argument parsing ----------------------------------------------------------
 
+# loading the preset information
 presets = {}
 with open(f'{script_dir}/gpt_presets.json') as read:
     presets = json.load(read)
-type_list = list(presets)
+preset_list = list(presets)
+
+# Parses the shell arguments
 parser = argparse.ArgumentParser()
 
 parser.add_argument(
     'preset',
-    help=
-    f'Preset (mode if you will) of the assistance. Can be one of: {type_list}',
+    help=f'Preset of the assistance. Can be one of: {preset_list}',
     default='default',
     nargs='?')
-parser.add_argument('prompt', help='The prompt', type=str)
+parser.add_argument(
+    '-p',
+    help='If used, the program will not run in interactive mode, only the',
+    type=str)
 parser.add_argument('-T', '--temperature', type=float, default=1)
+parser.add_argument('-b', '--backend', type=str, default="gpt3.5")
 parser.add_argument('-t',
                     help='response timeout (seconds)',
                     type=int,
@@ -77,6 +84,8 @@ args = parser.parse_args()
 
 # Main discussion loop --------------------------------------------------------
 
+# reads the preset, some of them require extra data, commands will be ran to
+# acquire it
 discussion = eval(
     args.message) if args.message else presets[args.preset]['prompt']
 
@@ -88,24 +97,35 @@ if 'data' in presets[args.preset]:
         discussion[0]["content"] = discussion[0]["content"].replace(
             '{' + str(data_name) + '}', result)
 
-message_user = {"role": "user", "content": args.prompt}
+# Actual loop
+while True:
+    if (content_user := input('> ')) == "exit":
+        sys.exit(0)
+    message_user = {"role": "user", "content": content_user}
 
-discussion.append(message_user)
+    discussion.append(message_user)
 
-# The data to send to the API
-data = {
-    "model": "gpt-3.5-turbo",
-    "messages": discussion,
-    "max_tokens": args.response_length,
-    "temperature": args.temperature,
-}
+    # The data to send to the API
+    data = {
+        "model": "gpt-3.5-turbo",
+        "messages": discussion,
+        "max_tokens": args.response_length,
+        "temperature": args.temperature,
+    }
 
-content_assistant = send_request(data)
+    content_assistant = send_request(data, headers, args.backend)
 
-message = {"role": "assistant", "content": content_assistant}
-discussion.append(message)
+    message = {"role": "assistant", "content": content_assistant}
+    discussion.append(message)
 
-with open(f'{script_dir}/log/discussion.txt', 'w') as file:
-    file.write(str(discussion))
+    with open(f'{script_dir}/log/discussion.txt', 'w') as file:
+        file.write(str(discussion))
 
-print(content_assistant)
+    with open('temp.txt', 'w') as file:
+        file.write(content_assistant)
+
+    subprocess.run(
+        ["glow temp.txt -s '/home/amda/.config/glow/gpt_style.json'"],
+        shell=True)
+
+    parse_code(content_assistant)
