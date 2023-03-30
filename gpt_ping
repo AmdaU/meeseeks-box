@@ -5,7 +5,7 @@ import sys
 import argparse
 import os
 import subprocess
-from parser import parse_code
+import parser
 
 # Get the path to the directory were this file is located
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -53,34 +53,34 @@ with open(f'{script_dir}/gpt_presets.json') as read:
 preset_list = list(presets)
 
 # Parses the shell arguments
-parser = argparse.ArgumentParser()
+arg_parser = argparse.ArgumentParser()
 
-parser.add_argument(
+arg_parser.add_argument(
     'preset',
     help=f'Preset of the assistance. Can be one of: {preset_list}',
     default='default',
     nargs='?')
-parser.add_argument(
+arg_parser.add_argument(
     '-p',
     help='If used, the program will not run in interactive mode, only the',
     type=str)
-parser.add_argument('-T', '--temperature', type=float, default=1)
-parser.add_argument('-b', '--backend', type=str, default="gpt3.5")
-parser.add_argument('-t',
+arg_parser.add_argument('-T', '--temperature', type=float, default=1)
+arg_parser.add_argument('-b', '--backend', type=str, default="gpt3.5")
+arg_parser.add_argument('-t',
                     help='response timeout (seconds)',
                     type=int,
                     default=10)
-parser.add_argument('-l',
+arg_parser.add_argument('-l',
                     '--response_length',
                     help='Maximum number of tokens',
                     type=int,
                     default=200)
-parser.add_argument('-m',
+arg_parser.add_argument('-m',
                     '--message',
                     help='override preset and send message',
                     type=str)
 
-args = parser.parse_args()
+args = arg_parser.parse_args()
 
 # Main discussion loop --------------------------------------------------------
 
@@ -99,8 +99,11 @@ if 'data' in presets[args.preset]:
 
 # Actual loop
 while True:
-    if (content_user := input('> ')) == "exit":
-        sys.exit(0)
+    if (content_user := input('> '))[0] == "/":
+        print('command was detected!')
+        parser.command(content_user)
+        continue
+
     message_user = {"role": "user", "content": content_user}
 
     discussion.append(message_user)
@@ -128,4 +131,4 @@ while True:
         ["glow temp.txt -s '/home/amda/.config/glow/gpt_style.json'"],
         shell=True)
 
-    parse_code(content_assistant)
+    parser.code(content_assistant)

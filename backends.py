@@ -4,31 +4,35 @@ import sys
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
-class llm_backend:
-    pass
+class Meeseeks:
+    def send_request(self, message, discussion):
+        print(self.__class__.__name__, "backend was not implemented yet")
+
+    def create_discussion_instance(self):
+        pass
+
+    def create_new_Meeseeks(self):
+        pass
 
 # gpt 3.5 backend -------------------------------------------------------------
 
-class gpt35(llm_backend):
+class gpt35(Meeseeks):
 
-    def __init__(self, max_number_of_tries: int = 3, api_key: str = ''):
-        pass
-    def gpt35_req(message, ):
-        # Number of times a request will be attempted to
-        max_number_of_tries = 3
+    endpoint = "https://api.openai.com/v1/chat/completions"
 
-        # gets the api key
-        api_key = ''
-        with open(f"{script_dir}/open_ai.secrets") as secret:
-            api_key = secret.readline().strip('\n')
-
-        # The API endpoint for the model you want to use
-        endpoint = "https://api.openai.com/v1/chat/completions"
-
-        headers = {
+    def __init__(self, api_key: str = '', max_number_of_tries: int = 3, ):
+        if api_key == '':
+            with open(f"{script_dir}/open_ai.secrets") as secret:
+                self.api_key = secret.readline().strip('\n')
+        else:
+            self.api_key = api_key
+        self.max_number_of_tries = max_number_of_tries
+        self.headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {api_key}"
         }
+
+    def send_request(self, message, discussion):
 
         message_user = {"role": "user", "content": content_user}
 
@@ -53,7 +57,7 @@ class gpt35(llm_backend):
         with open('temp.txt', 'w') as file:
             file.write(content_assistant)
 
-    def send_request(data, headers, backend):
+    def gpt35_req(data, headers, backend):
         '''Attempts to send the request to the backend'''
         for _ in range(max_number_of_tries):
             response = requests.post(endpoint,
@@ -67,6 +71,7 @@ class gpt35(llm_backend):
                 case _:
                     print(f"an oupise of type {response.status_code} happend, retrying...")
 
-    sys.exit(1)
+        sys.exit(1)
 
-
+class llama(Meeseeks):
+    pass
