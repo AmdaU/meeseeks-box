@@ -39,22 +39,29 @@ def command(command, meeseeks=None):
         raise(Exception('This function should not have been called...'))
     command_args = command[1:].split(' ')
     command_name = command_args.pop(0)
+
+    def ensure_meeseeks(name):
+        if not meeseeks:
+            print('No meeseeks was given, cannot "{name}"')
+        return bool(meeseeks)
+
     match command_name:
         case 'exit':
             sys.exit(0)
         case 'save':
             pass
         case 'remember':
-            if meeseeks:
+            if ensure_meeseeks(command_name):
                 meeseeks.remember(' '.join(command_args))
-            else:
-                print('No meeseeks was given, cannot remember')
         case 'set':
-            pass
+            if ensure_meeseeks(command_name):
+                setattr(meeseeks, command_args[0], eval(command_args[1]))
+        case 'get':
+            if ensure_meeseeks(command_name):
+                attr = getattr(meeseeks, command_args[0])
+                print(attr)
         case 'title':
-            if meeseeks:
+            if ensure_meeseeks(command_name):
                 meeseeks.title()
-            else:
-                print('No meeseeks was give, cannot title')
         case _:
             print('this command doesn\'t exist')
