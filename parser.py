@@ -10,7 +10,6 @@ def code(string):
 
     matches = list(match)
     if len(matches) == 0:
-        print("found no code cells")
         return
 
     if len(matches) > 1:

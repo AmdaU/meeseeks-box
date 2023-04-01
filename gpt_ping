@@ -11,40 +11,6 @@ import backends
 # Get the path to the directory were this file is located
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
-# Number of times a request will be attempted to
-max_number_of_tries = 3
-
-# gets the api key
-api_key = ''
-with open(f"{script_dir}/open_ai.secrets") as secret:
-    api_key = secret.readline().strip('\n')
-
-# The API endpoint for the model you want to use
-endpoint = "https://api.openai.com/v1/chat/completions"
-
-headers = {
-    "Content-Type": "application/json",
-    "Authorization": f"Bearer {api_key}"
-}
-
-
-def send_request(data, headers, backend):
-    '''Attempts to send the request to the backend'''
-    for _ in range(max_number_of_tries):
-        response = requests.post(endpoint,
-                                 headers=headers,
-                                 data=json.dumps(data),
-                                 timeout=args.t)
-        match response.status_code:
-            case 200:
-                message = response.json()['choices'][-1]['message']['content']
-                return message
-            case _:
-                print(f"an oupise of type {response.status_code} happend, retrying...")
-
-    sys.exit(1)
-
-
 # Argument parsing ----------------------------------------------------------
 
 # loading the preset information
@@ -83,23 +49,20 @@ arg_parser.add_argument('-m',
 
 args = arg_parser.parse_args()
 
-# Main discussion loop --------------a------------------------------------------
-
+# Main discussion loop --------------------------------------------------------
 while True:
     if (content_user := input('> '))[0] == "/":
-        print('command was detected!')
         parser.command(content_user)
         continue
 
-    meeseek = backends.gpt35(preset=args.preset)
+    meeseek = backends.gpt35(preset=args.preset, discussion=args.message,
+                             length=args.response_length, temp=args.temperature)
 
     content_assistant = meeseek.send_request(content_user)
 
     with open('temp.txt', 'w') as file:
         file.write(content_assistant)
 
-    subprocess.run(
-        ["glow temp.txt -s '/home/amda/.config/glow/gpt_style.json'"],
-        shell=True)
+    subprocess.run([f"echo '{content_assistant}' | glow temp.txt"], shell=True)
 
     parser.code(content_assistant)
