@@ -42,7 +42,7 @@ def command(command):
     command_name = command_args.pop(0)
     match command_name:
         case 'exit':
-            sys.exit(1)
+            sys.exit(0)
         case 'save':
             pass
         case 'remember':

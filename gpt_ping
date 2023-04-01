@@ -68,62 +68,32 @@ arg_parser.add_argument(
 arg_parser.add_argument('-T', '--temperature', type=float, default=1)
 arg_parser.add_argument('-b', '--backend', type=str, default="gpt3.5")
 arg_parser.add_argument('-t',
-                    help='response timeout (seconds)',
-                    type=int,
-                    default=10)
+                        help='response timeout (seconds)',
+                        type=int,
+                        default=10)
 arg_parser.add_argument('-l',
-                    '--response_length',
-                    help='Maximum number of tokens',
-                    type=int,
-                    default=200)
+                        '--response_length',
+                        help='Maximum number of tokens',
+                        type=int,
+                        default=200)
 arg_parser.add_argument('-m',
-                    '--message',
-                    help='override preset and send message',
-                    type=str)
+                        '--message',
+                        help='override preset and send message',
+                        type=str)
 
 args = arg_parser.parse_args()
 
-# Main discussion loop --------------------------------------------------------
+# Main discussion loop --------------a------------------------------------------
 
-# reads the preset, some of them require extra data, commands will be ran to
-# acquire it
-discussion = eval(
-    args.message) if args.message else presets[args.preset]['prompt']
-
-if 'data' in presets[args.preset]:
-    for data_name, data_command in presets[args.preset]['data'].items():
-        result = subprocess.run([data_command],
-                                shell=True,
-                                capture_output=True).stdout.decode()
-        discussion[0]["content"] = discussion[0]["content"].replace(
-            '{' + str(data_name) + '}', result)
-
-# Actual loop
 while True:
     if (content_user := input('> '))[0] == "/":
         print('command was detected!')
         parser.command(content_user)
         continue
 
-    message_user = {"role": "user", "content": content_user}
+    meeseek = backends.gpt35(preset=args.preset)
 
-    discussion.append(message_user)
-
-    # The data to send to the API
-    data = {
-        "model": "gpt-3.5-turbo",
-        "messages": discussion,
-        "max_tokens": args.response_length,
-        "temperature": args.temperature,
-    }
-
-    content_assistant = send_request(data, headers, args.backend)
-
-    message = {"role": "assistant", "content": content_assistant}
-    discussion.append(message)
-
-    with open(f'{script_dir}/log/discussion.txt', 'w') as file:
-        file.write(str(discussion))
+    content_assistant = meeseek.send_request(content_user)
 
     with open('temp.txt', 'w') as file:
         file.write(content_assistant)
