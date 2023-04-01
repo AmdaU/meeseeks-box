@@ -6,6 +6,7 @@ import argparse
 import os
 import subprocess
 import parser
+import backends
 
 # Get the path to the directory were this file is located
 script_dir = os.path.dirname(os.path.realpath(__file__))

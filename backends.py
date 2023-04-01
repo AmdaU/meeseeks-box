@@ -56,20 +56,21 @@ class gpt35(Meeseeks):
 
         # preset argument will be overident by discussion
         if discussion:
-            self.discussion = discussion if dicussion
+            self.discussion = discussion
         else:
             self.load_preset(preset)
+
 
     def send_request(self, message:str) -> str:
 
         message_user = {"role": "user", "content": message}
 
-        discussion.append(message_user)
+        self.discussion.append(message_user)
 
         # The data to send to the API
         data = {
             "model": "gpt-3.5-turbo",
-            "messages": discussion,
+            "messages": self.discussion,
             "max_tokens": self.length,
             "temperature": self.temp,
         }
@@ -89,13 +90,15 @@ class gpt35(Meeseeks):
             raise(Exception("was not able to contact server"))
 
         message = {"role": "assistant", "content": content_assistant}
-        discussion.append(message)
+        self.discussion.append(message)
 
         with open(f'{script_dir}/log/discussion.txt', 'w') as file:
-            file.write(str(discussion))
+            file.write(str(self.discussion))
 
         with open('temp.txt', 'w') as file:
             file.write(content_assistant)
+
+        return content_assistant
 
 class llama(Meeseeks):
     pass
