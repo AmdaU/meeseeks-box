@@ -6,7 +6,7 @@ import json
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
 class Meeseeks:
-    def send_request(self, message:str, discussion:list):
+    def reply(self, message:str, discussion:list):
         print(self.__class__.__name__, "backend was not implemented yet")
 
     def create_discussion_instance(self):
@@ -60,12 +60,11 @@ class gpt35(Meeseeks):
         else:
             self.load_preset(preset)
 
-
-    def send_request(self, message:str) -> str:
-
-        message_user = {"role": "user", "content": message}
-
+    def tell(self, message:str, role:str='user'):
+        message_user = {"role": role, "content": message}
         self.discussion.append(message_user)
+
+    def reply(self) -> str:
 
         # The data to send to the API
         data = {
@@ -91,12 +90,6 @@ class gpt35(Meeseeks):
 
         message = {"role": "assistant", "content": content_assistant}
         self.discussion.append(message)
-
-        with open(f'{script_dir}/log/discussion.txt', 'w') as file:
-            file.write(str(self.discussion))
-
-        with open('temp.txt', 'w') as file:
-            file.write(content_assistant)
 
         return content_assistant
 

@@ -11,8 +11,7 @@ import backends
 # Get the path to the directory were this file is located
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
-# Argument parsing ----------------------------------------------------------
-
+# Argument parsing ------------------------------------------------------------
 presets = {}
 with open(f'{script_dir}/gpt_presets.json') as read:
     presets = json.load(read)
@@ -54,10 +53,13 @@ while True:
         parser.command(content_user)
         continue
 
-    meeseek = backends.gpt35(preset=args.preset, discussion=args.message,
-                             length=args.response_length, temp=args.temperature)
+    meeseek = backends.gpt35(preset=args.preset,
+                             discussion=args.message,
+                             length=args.response_length,
+                             temp=args.temperature)
 
-    content_assistant = meeseek.send_request(content_user)
+    meeseek.tell(content_user)
+    content_assistant = meeseek.reply()
 
     # print the output so that it is ✨ p r e t t y ✨
     subprocess.run([f"echo '{content_assistant}' | glow temp.txt"], shell=True)
