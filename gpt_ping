@@ -60,7 +60,7 @@ while True:
     content_assistant = meeseeks.reply()
 
     # print the output so that it is  ✨ p r e t t y ✨
-    subprocess.run([f"echo '{content_assistant}' | glow temp.txt"], shell=True)
+    subprocess.run(["glow"], shell=True, input=content_assistant.encode('utf-8'))
 
     # Check for code blocks in the answer
     parser.code(content_assistant)
