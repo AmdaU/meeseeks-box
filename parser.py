@@ -2,7 +2,7 @@ import re
 import subprocess
 import sys
 
-code_block = r"`{3}(?P<language>.+)\n(?P<code>[\s\S]+)\n`{3}"
+code_block = r"`{3}(?P<language>[\w\W]+).*\n(?P<code>[\s\S]+)\n`{3}"
 
 
 def code(string):
