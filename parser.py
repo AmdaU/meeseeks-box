@@ -38,12 +38,16 @@ def code(string):
 def command(command):
     if not command[0] == '/':
         raise(Exception('This function should not have been called...'))
-    match command[1:].split(' ')[0]:
+    command_args = command[1:].split(' ')
+    command_name = command_args.pop(0)
+    match command_name:
         case 'exit':
             sys.exit(1)
         case 'save':
             pass
         case 'remember':
+            pass
+        case 'set':
             pass
         case _:
             print('this command doesn\'t exist')
