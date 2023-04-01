@@ -1,7 +1,5 @@
 #!/bin/python
-import requests
 import json
-import sys
 import argparse
 import os
 import subprocess
@@ -47,21 +45,21 @@ arg_parser.add_argument('-m',
 
 args = arg_parser.parse_args()
 
+meeseeks = backends.gpt35(preset=args.preset,
+                         discussion=args.message,
+                         length=args.response_length,
+                         temp=args.temperature)
+
 # Main discussion loop --------------------------------------------------------
 while True:
     if (content_user := input('> '))[0] == "/":
-        parser.command(content_user)
+        parser.command(content_user, meeseeks=meeseeks)
         continue
 
-    meeseek = backends.gpt35(preset=args.preset,
-                             discussion=args.message,
-                             length=args.response_length,
-                             temp=args.temperature)
+    meeseeks.tell(content_user)
+    content_assistant = meeseeks.reply()
 
-    meeseek.tell(content_user)
-    content_assistant = meeseek.reply()
-
-    # print the output so that it is ✨ p r e t t y ✨
+    # print the output so that it is  ✨ p r e t t y ✨
     subprocess.run([f"echo '{content_assistant}' | glow temp.txt"], shell=True)
 
     # Check for code blocks in the answer

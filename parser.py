@@ -2,7 +2,7 @@ import re
 import subprocess
 import sys
 
-code_block = r"`{3}(?P<language>[\w\W]+).*\n(?P<code>[\s\S]+)\n`{3}"
+code_block = r"`{3}(?P<language>[\w\W]+) ?\n(?P<code>[\s\S]+)\n`{3}"
 
 
 def code(string):
@@ -34,7 +34,7 @@ def code(string):
             print("This language is not supported yet")
 
 
-def command(command):
+def command(command, meeseeks=None):
     if not command[0] == '/':
         raise(Exception('This function should not have been called...'))
     command_args = command[1:].split(' ')
@@ -45,8 +45,16 @@ def command(command):
         case 'save':
             pass
         case 'remember':
-            pass
+            if meeseeks:
+                meeseeks.remember(' '.join(command_args))
+            else:
+                print('No meeseeks was given, cannot remember')
         case 'set':
             pass
+        case 'title':
+            if meeseeks:
+                meeseeks.title()
+            else:
+                print('No meeseeks was give, cannot title')
         case _:
             print('this command doesn\'t exist')

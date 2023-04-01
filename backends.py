@@ -7,8 +7,12 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 class Meeseeks:
-    def reply(self, message: str, discussion: list):
+    def reply(self, message: str):
         print(self.__class__.__name__, "backend was not implemented yet")
+
+    def tell(self, message: str, role: str = 'user'):
+        message_user = {"role": role, "content": message}
+        self.discussion.append(message_user)
 
     def create_discussion_instance(self):
         pass
@@ -35,6 +39,20 @@ class Meeseeks:
                                         capture_output=True).stdout.decode()
                 self.discussion[0]["content"] = self.discussion[0]["content"]\
                     .replace('{' + str(data_name) + '}', result)
+
+    def remember(self, specific=None):
+        if not specific:
+            specific="the current whole conversation"
+
+        message = {'role':'system', 'content': f'You shall now try to summerise something that was mentioned in this conversation. Make it concise but clear. It will later be used to remind you of what happend in the conversation. Use key points if you have to. The information does **not** need to be clear to a human, **only** to you. The subject of your note is: {specific}'}
+        note = self.reply(message)
+        print(note)
+
+    def title(self):
+        message = {'role':'system', 'content': 'give a short title to this conversation. Do not provide'
+                   ' **any** explanation or aditional content. Do not give **any** formating like "Title:" or similar. Do not end with a dot.'}
+        title = self.reply(message)
+        print(title)
 
 
 # gpt 3.5 backend -------------------------------------------------------------
@@ -66,16 +84,17 @@ class gpt35(Meeseeks):
         else:
             self.load_preset(preset)
 
-    def tell(self, message: str, role: str = 'user'):
-        message_user = {"role": role, "content": message}
-        self.discussion.append(message_user)
+    def reply(self, message=None) -> str:
 
-    def reply(self) -> str:
+        discussion = self.discussion
+
+        if message:
+            discussion.append(message)
 
         # The data to send to the API
         data = {
             "model": "gpt-3.5-turbo",
-            "messages": self.discussion,
+            "messages": discussion,
             "max_tokens": self.length,
             "temperature": self.temp,
         }
@@ -91,7 +110,8 @@ class gpt35(Meeseeks):
                         response.json()['choices'][-1]['message']['content']
                     break
                 case _:
-                    print(f"an oupise of type {response.status_code} happend, retrying...")
+                    print(f"an oupise of type {response.status_code}"
+                          " happend, retrying...")
         if i == self.max_number_of_tries - 1:
             raise(Exception("was not able to contact server"))
 
@@ -99,6 +119,7 @@ class gpt35(Meeseeks):
         self.discussion.append(message)
 
         return content_assistant
+
 
 class llama(Meeseeks):
     pass
