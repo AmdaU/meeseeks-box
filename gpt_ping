@@ -13,6 +13,11 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 
 # Argument parsing ----------------------------------------------------------
 
+presets = {}
+with open(f'{script_dir}/gpt_presets.json') as read:
+    presets = json.load(read)
+preset_list = list(presets)
+
 # Parses the command line arguments
 arg_parser = argparse.ArgumentParser()
 
@@ -54,6 +59,7 @@ while True:
 
     content_assistant = meeseek.send_request(content_user)
 
+    # print the output so that it is ✨ p r e t t y ✨
     subprocess.run([f"echo '{content_assistant}' | glow temp.txt"], shell=True)
 
     # Check for code blocks in the answer
