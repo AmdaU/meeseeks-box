@@ -30,7 +30,10 @@ def code(string):
         case 'py' | 'python':
             exec(code)
         case 'sh' | 'fish' | 'bash' | 'shell':
-            subprocess.run([code], shell=True)
+            subprocess.run([f'{language} -c "{code}"'], shell=True)
+        case _:
+            print("This language is not supported yet")
+
 
 def command(command):
     if not command[0] == '/':

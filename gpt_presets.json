@@ -21,5 +21,13 @@
       "shell": "basename $SHELL",
       "system": "neofetch --stdout"
     }
+  },
+  "actor": {
+    "prompt": [
+      {
+        "role": "system",
+        "content": "You are an actor. Your entier purpose is to act a role, be that of a person or a profession. The user will begin be telling you who you should act has. After this first message you should simply introduce yourself (in character) before the user tells you more specifically what to do."
+      }
+    ]
   }
 }

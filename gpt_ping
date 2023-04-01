@@ -52,7 +52,7 @@ with open(f'{script_dir}/gpt_presets.json') as read:
     presets = json.load(read)
 preset_list = list(presets)
 
-# Parses the shell arguments
+# Parses the command line arguments
 arg_parser = argparse.ArgumentParser()
 
 arg_parser.add_argument(
