@@ -3,7 +3,8 @@
 
 #### Todo:
 - [ ] Command help
-- [ ] mutli-meeseek conversation
+- [ ] multi-meeseeks conversation
 - [ ] Terminal feedback
 - [ ] Add hyperlinks to run command
-- [ ] Make glow code block *blockier* 
+- [x] Make glow code block *blockier* 
+- [ ] Implement `stream` api
