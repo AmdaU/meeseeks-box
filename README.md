@@ -1,5 +1,9 @@
 # Meeseeks Box:
-### An interface allowing you to communicate with different large languages models easily and allowing them to communicate with one another
+An interface allowing you to communicate with different large languages models easily and allowing them to communicate with one another.
+
+To interact with chat-gtp in the usual chat mode (plus some local commands) run 
+
+`gpt-ping -h`
 
 #### Todo:
 - [ ] Command help

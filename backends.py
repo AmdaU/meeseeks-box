@@ -2,11 +2,15 @@ import os
 import requests
 import json
 import subprocess
+import datetime
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 class Meeseeks:
+    def __init__(self):
+        self.archive = {}
+        self.archive_file = None
     def reply(self, message: str):
         print(self.__class__.__name__, "backend was not implemented yet")
 
@@ -14,8 +18,13 @@ class Meeseeks:
         message_user = {"role": role, "content": message}
         self.discussion.append(message_user)
 
-    def create_discussion_instance(self):
-        pass
+    def save_discussion(self):
+        self.archive['discussion'] = self.discussion
+        if not self.archive_file:
+            self.archive['title'] = self.title
+            self.archive_file = f'{script_dir}/archive/{str(datetime.datetime.now()).replace(" ","")}'
+        with open(self.archive_file, 'w+') as file:
+            json.dump(self.archive, file)
 
     def create_new_Meeseeks(self):
         pass
@@ -48,11 +57,15 @@ class Meeseeks:
         note = self.reply(message)
         print(note)
 
+    @property
     def title(self):
+        old_temp = self.temp
+        self.temp = 0
         message = {'role':'system', 'content': 'give a short title to this conversation. Do not provide'
                    ' **any** explanation or aditional content. Do not give **any** formating like "Title:" or similar. Do not end with a dot.'}
         title = self.reply(message)
-        print(title)
+        self.temp = old_temp
+        return title
 
 
 # gpt 3.5 backend -------------------------------------------------------------
@@ -63,6 +76,7 @@ class gpt35(Meeseeks):
     def __init__(self, api_key: str = '', max_number_of_tries: int = 3,
                  temp: int = 1, length=100, timeout=10, preset='default',
                  discussion=None):
+        super(gpt35, self).__init__()
         if api_key == '':
             with open(f"{script_dir}/open_ai.secrets") as secret:
                 self.api_key = secret.readline().strip('\n')

@@ -54,7 +54,8 @@ def command(command, meeseeks=None):
         case 'exit':
             sys.exit(0)
         case 'save':
-            pass
+            if ensure_meeseeks(command_name):
+                meeseeks.save_discussion()
         case 'remember':
             if ensure_meeseeks(command_name):
                 meeseeks.remember(' '.join(command_args))
