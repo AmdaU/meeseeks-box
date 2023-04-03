@@ -58,9 +58,8 @@ while True:
 
     meeseeks.tell(content_user)
     content_assistant = meeseeks.reply()
-
+    content_assistant = parser.code(content_assistant)
     # print the output so that it is  ✨ p r e t t y ✨
-    subprocess.run(["glow"], shell=True, input=content_assistant.encode('utf-8'))
+    subprocess.run(["glow -s '/home/amda/.config/glow/gpt_style.json'"], shell=True, input=content_assistant.encode('utf-8'))
 
     # Check for code blocks in the answer
-    parser.code(content_assistant)

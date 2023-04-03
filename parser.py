@@ -2,11 +2,14 @@ import re
 import subprocess
 import sys
 
-code_block = r"`{3}(?P<language>[\w\W]+) ?\n(?P<code>[\s\S]+)\n`{3}"
+code_block = r"`{3}(?P<language>[\w+#-]+) ?\n(?P<code>[\s\S]+)\n`{3}"
 
 
 def code(string):
     match = re.finditer(code_block, string)
+
+    new_text = re.sub(code_block, "\g<0>\n this is code :)", string)
+
 
     matches = list(match)
     if len(matches) == 0:
@@ -18,6 +21,7 @@ def code(string):
     match = matches[-1]
 
     language, code = match.groups()
+
 
     execute = input(f'System: a {language} code cell was found,'
                     'would you like to execute it? (y/N)')
@@ -33,6 +37,7 @@ def code(string):
         case _:
             print("This language is not supported yet")
 
+    return new_text
 
 def command(command, meeseeks=None):
     if not command[0] == '/':

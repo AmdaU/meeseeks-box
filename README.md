@@ -5,3 +5,5 @@
 - [ ] Command help
 - [ ] mutli-meeseek conversation
 - [ ] Terminal feedback
+- [ ] Add hyperlinks to run command
+- [ ] Make glow code block *blockier* 
