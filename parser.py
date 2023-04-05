@@ -10,7 +10,7 @@ def code(string):
 
     matches = list(match)
     if len(matches) == 0:
-        return string, none
+        return string, None
 
     new_text = re.sub(code_block, "\g<0>\n this is code :)", string)
 
