@@ -8,36 +8,14 @@ code_block = r"`{3}(?P<language>[\w+#-]+) ?\n(?P<code>[\s\S]+)\n`{3}"
 def code(string):
     match = re.finditer(code_block, string)
 
-    new_text = re.sub(code_block, "\g<0>\n this is code :)", string)
-
-
     matches = list(match)
     if len(matches) == 0:
-        return
+        return string, none
 
-    if len(matches) > 1:
-        print("found multiple code cell, will only consider last one")
+    new_text = re.sub(code_block, "\g<0>\n this is code :)", string)
 
-    match = matches[-1]
+    return new_text, [match.groups() for match in matches]
 
-    language, code = match.groups()
-
-
-    execute = input(f'System: a {language} code cell was found,'
-                    'would you like to execute it? (y/N)')
-
-    if execute.lower() not in ['y', 'yes']:
-        return
-
-    match language:
-        case 'py' | 'python':
-            subprocess.run([language], shell=True, input=code.encode('utf-8'))
-        case 'sh' | 'fish' | 'bash' | 'shell':
-            subprocess.run([language], shell=True, input=code.encode('utf-8'))
-        case _:
-            print("This language is not supported yet")
-
-    return new_text
 
 def command(command, meeseeks=None):
     if not command[0] == '/':
