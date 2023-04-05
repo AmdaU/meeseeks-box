@@ -5,6 +5,7 @@ import os
 import subprocess
 import parser
 import backends
+from timeit import default_timer as timer
 
 # Get the path to the directory were this file is located
 script_dir = os.path.dirname(os.path.realpath(__file__))

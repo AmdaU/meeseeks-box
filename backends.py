@@ -3,6 +3,8 @@ import requests
 import json
 import subprocess
 import datetime
+import functools
+import openai
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -11,7 +13,14 @@ class Meeseeks:
     def __init__(self):
         self.archive = {}
         self.archive_file = None
+
     def reply(self, message: str):
+        """
+        This method is the most important for a meeseeks as it it the one
+        who actaly request a reply from the llm this method however
+        oviously depends on the specif backends and needs to be reimplemented
+        every time, this is just a placeholder
+        """
         print(self.__class__.__name__, "backend was not implemented yet")
 
     def tell(self, message: str, role: str = 'user'):
@@ -41,6 +50,7 @@ class Meeseeks:
             preset = 'default'
         self.discussion = presets[preset]['prompt']
 
+        # Some presets will pull 'live' data from the system of elsewhere
         if 'data' in presets[preset]:
             for data_name, data_command in presets[preset]['data'].items():
                 result = subprocess.run([data_command],
@@ -58,13 +68,17 @@ class Meeseeks:
         print(note)
 
     @property
+    @functools.lru_cache() # Once generated, the title stays
     def title(self):
+        """gives a title to the current discussion"""
+        # temporarily sets it's temperature to 0 for les "messy" result
         old_temp = self.temp
         self.temp = 0
         message = {'role':'system', 'content': 'give a short title to this conversation. Do not provide'
-                   ' **any** explanation or aditional content. Do not give **any** formating like "Title:" or similar. Do not end with a dot.'}
+                ' **any** explanation or aditional content. Do not give **any** formating like "Title:" or similar. Do not end with a dot.'}
         title = self.reply(message)
-        self.temp = old_temp
+
+        self.temp = old_temp # resets the temperature
         return title
 
 
@@ -99,35 +113,23 @@ class gpt35(Meeseeks):
             self.load_preset(preset)
 
     def reply(self, message=None) -> str:
-
+        openai.api_key = self.api_key
         discussion = self.discussion
 
         if message:
             discussion.append(message)
-
-        # The data to send to the API
-        data = {
-            "model": "gpt-3.5-turbo",
-            "messages": discussion,
-            "max_tokens": self.length,
-            "temperature": self.temp,
-        }
-
-        for i in range(self.max_number_of_tries):
-            response = requests.post(self.endpoint,
-                                     headers=self.headers,
-                                     data=json.dumps(data),
-                                     timeout=self.timeout)
-            match response.status_code:
-                case 200:
-                    content_assistant =\
-                        response.json()['choices'][-1]['message']['content']
-                    break
-                case _:
-                    print(f"an oupise of type {response.status_code}"
-                          " happend, retrying...")
-        if i == self.max_number_of_tries - 1:
-            raise(Exception("was not able to contact server"))
+        response = openai.ChatCompletion.create(
+            model='gpt-3.5-turbo',
+            messages=self.discussion,
+            temperature=self.temp,
+            max_tokens=self.length,
+            stream=True  # again, we set stream=True
+        )
+        collected_messages = []
+        for chunk in response:
+            chunk_message = chunk['choices'][0]['delta']  # extract the message
+            collected_messages.append(chunk_message)
+        content_assistant = ''.join([m.get('content', '') for m in collected_messages])
 
         message = {"role": "assistant", "content": content_assistant}
         self.discussion.append(message)
