@@ -6,6 +6,7 @@ import subprocess
 import parser
 import backends
 from timeit import default_timer as timer
+from code import execute_code
 
 # Get the path to the directory were this file is located
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -59,9 +60,23 @@ while True:
 
     meeseeks.tell(content_user)
     content_assistant = meeseeks.reply()
-    new_content_assistant, code_blocks = parser.code(content_assistant)
-    content_assistant = new_content_assistant if new_content_assistant else content_assistant
+
+    content_assistant, code_blocks = parser.code(content_assistant)
     # print the output so that it is  ✨ p r e t t y ✨
     subprocess.run(["glow -s '/home/amda/.config/glow/gpt_style.json'"], shell=True, input=content_assistant.encode('utf-8'))
+
+    if not code_blocks:
+        continue
+
+    language, code = code_blocks[-1]
+
+    execute = input(f'System: a {language} code cell was found,'
+                'would you like to execute it? (y/N)')
+
+    if execute.lower() not in ['y', 'yes']:
+        continue
+
+    execute_code(language, code)
+
 
     # Check for code blocks in the answer
