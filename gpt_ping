@@ -29,7 +29,7 @@ arg_parser.add_argument(
     '-p',
     help='If used, the program will not run in interactive mode, only the',
     type=str)
-arg_parser.add_argument('-T', '--temperature', type=float, default=1)
+arg_parser.add_argument('-T', '--temperature', type=float, default=0)
 arg_parser.add_argument('-b', '--backend', type=str, default="gpt3.5")
 arg_parser.add_argument('-t',
                         help='response timeout (seconds)',

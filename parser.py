@@ -2,27 +2,42 @@ import re
 import subprocess
 import sys
 
-code_block = r"```(?P<language>[\w+#-]+) ?\n(?P<code>[\s\S]+)\n```"
 
+def code(markdown_string:str) -> Tuple[str, List[Tuple]]:
+    '''
+    Identifies markdown code blocks and tags them with a number.
+    Returns the annotated markdown and a list of the code block in the format:
+    (language, code)
+    '''
+    # regex pattern of a code cell
+    code_block = r"(```(?P<language>[\w+#-]+?)? ?\n(?P<code>(?![\s\S]```[\s\S])[\s\S]+?)?\n)```"
 
-def code(string):
-    match = re.finditer(code_block, string)
+    matches = list(re.finditer(code_block, markdown_string))
 
-    matches = list(match)
+    # if there is no code cell, return unmodified markdown
     if len(matches) == 0:
-        return string, None
+        return markdown_string, None
 
-    new_text = re.sub(code_block, "\g<0>\n this is code :)", string)
+    # counter for the numbers of cells
+    count = iter(range(len(matches)))
 
-    return new_text, [match.groups() for match in matches]
+    def append_cell_number(match):
+        return match.groups()[0] + f'\n[{next(count)}]\n```'
+
+    new_text = re.sub(code_block, append_cell_number, markdown_string)
+
+    return new_text, [match.groups()[1:] for match in matches]
 
 
-def command(command, meeseeks=None):
+def command(command: str, meeseeks=None) -> None:
+    '''Parses user commands'''
+    # raw string (with /) should be passed
     if not command[0] == '/':
         raise(Exception('This function should not have been called...'))
     command_args = command[1:].split(' ')
     command_name = command_args.pop(0)
 
+    # most commands (even if not all) require a that a meeseeks was passed
     def ensure_meeseeks(name):
         if not meeseeks:
             print('No meeseeks was given, cannot "{name}"')
