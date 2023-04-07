@@ -3,7 +3,7 @@ import subprocess
 import sys
 
 
-def code(markdown_string:str) -> Tuple[str, List[Tuple]]:
+def code(markdown_string:str) -> tuple[str, list[tuple]]:
     '''
     Identifies markdown code blocks and tags them with a number.
     Returns the annotated markdown and a list of the code block in the format:
@@ -62,5 +62,7 @@ def command(command: str, meeseeks=None) -> None:
         case 'title':
             if ensure_meeseeks(command_name):
                 meeseeks.title()
+        case 'code':
+            pass
         case _:
             print('this command doesn\'t exist')

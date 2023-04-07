@@ -112,12 +112,15 @@ class gpt35(Meeseeks):
         else:
             self.load_preset(preset)
 
-    def reply(self, message=None) -> str:
-        openai.api_key = self.api_key
-        discussion = self.discussion
+    def reply(self, message: str = None, live: bool=False) -> str:
 
+        # additional message will not be remembered in the meeseeks memory
+        discussion = self.discussion
         if message:
             discussion.append(message)
+
+        openai.api_key = self.api_key
+
         response = openai.ChatCompletion.create(
             model='gpt-3.5-turbo',
             messages=self.discussion,
@@ -125,11 +128,24 @@ class gpt35(Meeseeks):
             max_tokens=self.length,
             stream=True  # again, we set stream=True
         )
-        collected_messages = []
+
+        content_assistant = ""
+        out_stty = subprocess.run(["stty size"], shell=True, capture_output=True)
+        height, width = out_stty.stdout.decode().split(' ')
+        height, width = int(height), int(width)
         for chunk in response:
             chunk_message = chunk['choices'][0]['delta']  # extract the message
-            collected_messages.append(chunk_message)
-        content_assistant = ''.join([m.get('content', '') for m in collected_messages])
+            chunk_content = chunk_message.get('content','')
+            content_assistant += chunk_content
+            if live:
+                out = subprocess.run(["glow -s '/home/amda/.config/glow/gpt_style.json'"], shell=True, input=(content_assistant).encode('utf-8'), capture_output=True)
+                print(out.stdout.decode())
+                lines = subprocess.run(["wc -l"], shell=True, input = out.stdout, capture_output=True).stdout.decode()
+                lines = int(lines)
+                # print(chunk_content, end="", flush=True)
+                print(f'\033[{min(lines, height)+1}A', end='\r')
+        if live:
+            print('\n'*int(min(lines, height)))
 
         message = {"role": "assistant", "content": content_assistant}
         self.discussion.append(message)

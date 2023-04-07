@@ -30,6 +30,7 @@ arg_parser.add_argument(
     help='If used, the program will not run in interactive mode, only the',
     type=str)
 arg_parser.add_argument('-T', '--temperature', type=float, default=0)
+arg_parser.add_argument('--live', action='store_true')
 arg_parser.add_argument('-b', '--backend', type=str, default="gpt3.5")
 arg_parser.add_argument('-t',
                         help='response timeout (seconds)',
@@ -47,6 +48,7 @@ arg_parser.add_argument('-m',
 
 args = arg_parser.parse_args()
 
+# initiate meeseeks instance
 meeseeks = backends.gpt35(preset=args.preset,
                          discussion=args.message,
                          length=args.response_length,
@@ -59,11 +61,12 @@ while True:
         continue
 
     meeseeks.tell(content_user)
-    content_assistant = meeseeks.reply()
+    content_assistant = meeseeks.reply(live=args.live)
 
     content_assistant, code_blocks = parser.code(content_assistant)
     # print the output so that it is  ✨ p r e t t y ✨
-    subprocess.run(["glow -s '/home/amda/.config/glow/gpt_style.json'"], shell=True, input=content_assistant.encode('utf-8'))
+    if not args.live:
+        subprocess.run(["glow -s '/home/amda/.config/glow/gpt_style.json'"], shell=True, input=content_assistant.encode('utf-8'))
 
     if not code_blocks:
         continue
