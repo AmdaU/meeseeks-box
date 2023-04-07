@@ -1,6 +1,7 @@
 import re
 import subprocess
 import sys
+from code import execute_code
 
 
 def code(markdown_string:str) -> tuple[str, list[tuple]]:
@@ -29,7 +30,7 @@ def code(markdown_string:str) -> tuple[str, list[tuple]]:
     return new_text, [match.groups()[1:] for match in matches]
 
 
-def command(command: str, meeseeks=None) -> None:
+def command(command: str, meeseeks=None, code_blocks=None) -> None:
     '''Parses user commands'''
     # raw string (with /) should be passed
     if not command[0] == '/':
@@ -63,6 +64,11 @@ def command(command: str, meeseeks=None) -> None:
             if ensure_meeseeks(command_name):
                 meeseeks.title()
         case 'code':
-            pass
+            subcommand = command_args.pop(0)
+            match subcommand:
+                case 'exec':
+                    execute_code(*code_blocks[int(command_args[0])])
+                case _:
+                    print('subcommand doesn\'t exist')
         case _:
             print('this command doesn\'t exist')

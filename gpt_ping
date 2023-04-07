@@ -56,11 +56,11 @@ meeseeks = backends.gpt35(preset=args.preset,
                          discussion=args.message,
                          length=args.response_length,
                          temp=args.temperature)
-
+code_blocks = None
 # Main discussion loop --------------------------------------------------------
 while True:
     if (content_user := input('> '))[0] == "/":
-        parser.command(content_user, meeseeks=meeseeks)
+        parser.command(content_user, meeseeks=meeseeks, code_blocks=code_blocks)
         continue
 
     meeseeks.tell(content_user)

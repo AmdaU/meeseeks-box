@@ -31,7 +31,7 @@ class Meeseeks:
         self.archive['discussion'] = self.discussion
         if not self.archive_file:
             self.archive['title'] = self.title
-            self.archive_file = f'{script_dir}/archive/{str(datetime.datetime.now()).replace(" ","")}'
+            self.archive_file = f'{script_dir}/archive/{str(datetime.datetime.now()).replace(" ","_")}'
         with open(self.archive_file, 'w+') as file:
             json.dump(self.archive, file)
 
