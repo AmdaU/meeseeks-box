@@ -17,8 +17,8 @@ class Meeseeks:
     def reply(self, message: str):
         """
         This method is the most important for a meeseeks as it it the one
-        who actaly request a reply from the llm this method however
-        oviously depends on the specif backends and needs to be reimplemented
+        who actually request a reply from the llm this method however
+        obviously depends on the specif backends and needs to be reimplemented
         every time, this is just a placeholder
         """
         print(self.__class__.__name__, "backend was not implemented yet")
@@ -40,6 +40,7 @@ class Meeseeks:
 
     def load_preset(self, preset):
         '''Sets up the "preset", aka info before the discussion starts'''
+
         presets = {}
         with open(f'{script_dir}/gpt_presets.json') as read:
             presets = json.load(read)
@@ -48,6 +49,7 @@ class Meeseeks:
         if preset not in preset_list:
             print("This preset does not exist, using default")
             preset = 'default'
+
         self.discussion = presets[preset]['prompt']
 
         # Some presets will pull 'live' data from the system of elsewhere
@@ -133,19 +135,25 @@ class gpt35(Meeseeks):
         out_stty = subprocess.run(["stty size"], shell=True, capture_output=True)
         height, width = out_stty.stdout.decode().split(' ')
         height, width = int(height), int(width)
+        n_lines = 0
         for chunk in response:
             chunk_message = chunk['choices'][0]['delta']  # extract the message
             chunk_content = chunk_message.get('content','')
             content_assistant += chunk_content
             if live:
                 out = subprocess.run(["glow -s '/home/amda/.config/glow/gpt_style.json'"], shell=True, input=(content_assistant).encode('utf-8'), capture_output=True)
-                print(out.stdout.decode())
-                lines = subprocess.run(["wc -l"], shell=True, input = out.stdout, capture_output=True).stdout.decode()
-                lines = int(lines)
+                out_string = out.stdout.decode()
+                lines = out_string.split('\n')
+                lines_out = subprocess.run(["wc -l"], shell=True, input = out.stdout, capture_output=True)
+                lines_num = int(lines_out.stdout.decode())
                 # print(chunk_content, end="", flush=True)
-                print(f'\033[{min(lines, height)+1}A', end='\r')
-        if live:
-            print('\n'*int(min(lines, height)))
+                if not (len(lines) > n_lines):
+                    print(f'\033[1A', end='\r')
+                else:
+                    n_lines=len(lines)
+                print(lines[-3])
+        # if live:
+            # print('\n'*int(min(lines, height)))
 
         message = {"role": "assistant", "content": content_assistant}
         self.discussion.append(message)

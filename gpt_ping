@@ -30,7 +30,7 @@ arg_parser.add_argument(
     help='If used, the program will not run in interactive mode, only the',
     type=str)
 arg_parser.add_argument('-T', '--temperature', type=float, default=0)
-arg_parser.add_argument('--live', action='store_true')
+arg_parser.add_argument('--live', help='"Live" preview alows the anwser to be seen as it is being generated (experimental)', action='store_true')
 arg_parser.add_argument('-b', '--backend', type=str, default="gpt3.5")
 arg_parser.add_argument('-t',
                         help='response timeout (seconds)',
@@ -47,6 +47,9 @@ arg_parser.add_argument('-m',
                         type=str)
 
 args = arg_parser.parse_args()
+
+if args.live:
+    print("Live feature is expiremental, expect buginess")
 
 # initiate meeseeks instance
 meeseeks = backends.gpt35(preset=args.preset,
