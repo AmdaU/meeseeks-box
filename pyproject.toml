@@ -11,11 +11,16 @@ numpy = "^1.24.2"
 requests = "^2.28.2"
 openai = "^0.27.4"
 loguru = "^0.7.0"
+toml = "^0.10.2"
 
 
 [tool.poetry.group.dev.dependencies]
 bpython = "^0.24"
+yapf = "^0.32.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 80
