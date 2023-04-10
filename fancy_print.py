@@ -1,13 +1,16 @@
 import subprocess
 import os
 import platform
+import parser
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 def print_stream(content):
     global terminal_height, terminal_width
-    style_file = "ressources/gpt_style.json"
+    parsed_content, _ = parser.code(content)  # parse the whole code every time
+    content = parsed_content
+    style_file = "ressources/style.json"
     fancy_out = subprocess.run(
         [f"glow -s '{script_dir}/{style_file}' -w {terminal_width}"],
         shell=True,

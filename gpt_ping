@@ -13,9 +13,11 @@ import sys
 
 logger.remove()
 logger.level("system", no=38, color="<yellow>")
-_ = logger.add(sys.stderr,
-           format="<b><yellow>{level}</yellow></b>: {message}",
-           filter=lambda record: record["level"].name == "system")
+_ = logger.add(
+    sys.stderr,
+    format="<b><yellow>{level}</yellow></b>: {message}",
+    filter=lambda record: record["level"].name == "system",
+)
 
 
 # Get the path to the directory were this file is located
@@ -23,7 +25,7 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 
 # Argument parsing ------------------------------------------------------------
 presets = {}
-with open(f'{script_dir}/gpt_presets.json') as read:
+with open(f"{script_dir}/ressources/presets.json") as read:
     presets = json.load(read)
 preset_list = list(presets)
 
@@ -31,45 +33,53 @@ preset_list = list(presets)
 arg_parser = argparse.ArgumentParser()
 
 arg_parser.add_argument(
-    'preset',
-    help=f'Preset of the assistance. Can be one of: {preset_list}',
-    default='default',
-    nargs='?')
+    "preset",
+    help=f"Preset of the assistance. Can be one of: {preset_list}",
+    default="default",
+    nargs="?",
+)
 arg_parser.add_argument(
-    '-p',
-    help='If used, the program will not run in interactive mode, only the',
-    type=str)
-arg_parser.add_argument('-T', '--temperature', type=float, default=0)
-arg_parser.add_argument('--live', help='"Live" preview alows the anwser to be seen as it is being generated (experimental)', action='store_true')
-arg_parser.add_argument('-b', '--backend', type=str, default="gpt3.5")
-arg_parser.add_argument('-t',
-                        help='response timeout (seconds)',
-                        type=int,
-                        default=10)
-arg_parser.add_argument('-l',
-                        '--response_length',
-                        help='Maximum number of tokens',
-                        type=int,
-                        default=200)
-arg_parser.add_argument('-m',
-                        '--message',
-                        help='override preset and send message',
-                        type=str)
+    "-p",
+    help="If used, the program will not run in interactive mode, only the",
+    type=str,
+)
+arg_parser.add_argument("-T", "--temperature", type=float, default=0)
+arg_parser.add_argument(
+    "--live",
+    help='"Live" preview alows the anwser to be seen as it is being generated (experimental)',
+    action="store_true",
+)
+arg_parser.add_argument("-b", "--backend", type=str, default="gpt3.5")
+arg_parser.add_argument(
+    "-t", help="response timeout (seconds)", type=int, default=10
+)
+arg_parser.add_argument(
+    "-l",
+    "--response_length",
+    help="Maximum number of tokens",
+    type=int,
+    default=200,
+)
+arg_parser.add_argument(
+    "-m", "--message", help="override preset and send message", type=str
+)
 
 args = arg_parser.parse_args()
 
 if args.live:
-    logger.log("system","Live feature is expiremental, expect buginess")
+    logger.log("system", "Live feature is expiremental, expect buginess")
 
 # initiate meeseeks instance
-meeseeks = backends.gpt35(preset=args.preset,
-                         discussion=args.message,
-                         length=args.response_length,
-                         temp=args.temperature)
+meeseeks = backends.gpt35(
+    preset=args.preset,
+    discussion=args.message,
+    length=args.response_length,
+    temp=args.temperature,
+)
 code_blocks = None
 # Main discussion loop --------------------------------------------------------
 while True:
-    if (content_user := input('> '))[0] == "/":
+    if (content_user := input("> "))[0] == "/":
         parser.command(content_user, meeseeks=meeseeks, code_blocks=code_blocks)
         continue
 
@@ -79,22 +89,24 @@ while True:
     content_assistant, code_blocks = parser.code(content_assistant)
     # print the output so that it is  ✨ p r e t t y ✨
     if not args.live:
-        subprocess.run(["glow -s '{script_dir}/ressources/gpt_style.json'"], shell=True, input=content_assistant.encode('utf-8'))
+        subprocess.run(
+            [f"glow -s '{script_dir}/ressources/style.json'"],
+            shell=True,
+            input=content_assistant.encode("utf-8"),
+        )
+        print('')
 
     if not code_blocks:
         continue
 
     language, code = code_blocks[-1]
 
-
-
     # execute = input(f'System: a {language} code cell was found,'
-                # 'would you like to execute it? (y/N)')
+    # 'would you like to execute it? (y/N)')
 
     # if execute.lower() not in ['y', 'yes']:
-        # continue
+    # continue
 
     # execute_code(language, code)
-
 
     # Check for code blocks in the answer

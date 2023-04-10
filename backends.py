@@ -46,7 +46,7 @@ class Meeseeks:
         """Sets up the "preset", aka info before the discussion starts"""
         # Loading the preset info from the json file
         presets = {}
-        with open(f"{script_dir}/gpt_presets.json") as read:
+        with open(f"{script_dir}/ressources/presets.json") as read:
             presets = json.load(read)
         preset_list = list(presets)
 
