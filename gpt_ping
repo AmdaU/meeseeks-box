@@ -1,4 +1,4 @@
-#!/bin/python
+#!/home/amda/Documents/Projects/gpt/.venv/bin/python
 import json
 import argparse
 import os
@@ -7,6 +7,16 @@ import parser
 import backends
 from timeit import default_timer as timer
 from code import execute_code
+from loguru import logger
+import sys
+
+
+logger.remove()
+logger.level("system", no=38, color="<yellow>")
+_ = logger.add(sys.stderr,
+           format="<b><yellow>{level}</yellow></b>: {message}",
+           filter=lambda record: record["level"].name == "system")
+
 
 # Get the path to the directory were this file is located
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -49,7 +59,7 @@ arg_parser.add_argument('-m',
 args = arg_parser.parse_args()
 
 if args.live:
-    print("Live feature is expiremental, expect buginess")
+    logger.log("system","Live feature is expiremental, expect buginess")
 
 # initiate meeseeks instance
 meeseeks = backends.gpt35(preset=args.preset,
@@ -69,20 +79,22 @@ while True:
     content_assistant, code_blocks = parser.code(content_assistant)
     # print the output so that it is  ✨ p r e t t y ✨
     if not args.live:
-        subprocess.run(["glow"], shell=True, input=content_assistant.encode('utf-8'))
+        subprocess.run(["glow -s '{script_dir}/ressources/gpt_style.json'"], shell=True, input=content_assistant.encode('utf-8'))
 
     if not code_blocks:
         continue
 
     language, code = code_blocks[-1]
 
-    execute = input(f'System: a {language} code cell was found,'
-                'would you like to execute it? (y/N)')
 
-    if execute.lower() not in ['y', 'yes']:
-        continue
 
-    execute_code(language, code)
+    # execute = input(f'System: a {language} code cell was found,'
+                # 'would you like to execute it? (y/N)')
+
+    # if execute.lower() not in ['y', 'yes']:
+        # continue
+
+    # execute_code(language, code)
 
 
     # Check for code blocks in the answer

@@ -1,5 +1,4 @@
 import os
-import requests
 import json
 import subprocess
 import datetime
@@ -24,37 +23,43 @@ class Meeseeks:
         print(self.__class__.__name__, "backend was not implemented yet")
 
     def tell(self, message: str, role: str = 'user'):
+        """adds a message to the meeseeks mid-term memory"""
         message_user = {"role": role, "content": message}
         self.discussion.append(message_user)
 
     def save_discussion(self):
+        """saves the current discussion along with other info to a file"""
         self.archive['discussion'] = self.discussion
         if not self.archive_file:
+            # the filename is simply the current time, which isn't a great name
             self.archive['title'] = self.title
-            self.archive_file = f'{script_dir}/archive/{str(datetime.datetime.now()).replace(" ","_")}'
+            filename = str(datetime.datetime.now()).replace(" ", "_")
+            self.archive_file = f'{script_dir}/archive/{filename}'
         with open(self.archive_file, 'w+') as file:
             json.dump(self.archive, file)
 
     def create_new_Meeseeks(self):
         pass
 
-    def load_preset(self, preset):
+    def load_preset(self, preset_name):
         '''Sets up the "preset", aka info before the discussion starts'''
-
+        #Loading the preset info from the json file
         presets = {}
         with open(f'{script_dir}/gpt_presets.json') as read:
             presets = json.load(read)
         preset_list = list(presets)
 
-        if preset not in preset_list:
+        if preset_name not in preset_list:
             print("This preset does not exist, using default")
-            preset = 'default'
+            preset_name = 'default'
 
-        self.discussion = presets[preset]['prompt']
+        preset = presets[preset_name]
+
+        self.discussion = preset['prompt']
 
         # Some presets will pull 'live' data from the system of elsewhere
-        if 'data' in presets[preset]:
-            for data_name, data_command in presets[preset]['data'].items():
+        if 'data' in preset:
+            for data_name, data_command in preset['data'].items():
                 result = subprocess.run([data_command],
                                         shell=True,
                                         capture_output=True).stdout.decode()
@@ -62,10 +67,17 @@ class Meeseeks:
                     .replace('{' + str(data_name) + '}', result)
 
     def remember(self, specific=None):
+        """store information the the long term memory"""
         if not specific:
-            specific="the current whole conversation"
+            specific = "the current whole conversation"
 
-        message = {'role':'system', 'content': f'You shall now try to summerise something that was mentioned in this conversation. Make it concise but clear. It will later be used to remind you of what happend in the conversation. Use key points if you have to. The information does **not** need to be clear to a human, **only** to you. The subject of your note is: {specific}'}
+        message = {'role':'system',
+                   'content': f'You shall now try to summerise something that'
+                   'was mentioned in this conversation. Make it concise but'
+                   'clear. It will later be used to remind you of what happend'
+                   'in the conversation. Use key points if you have to. The'
+                   'information does **not** need to be clear to a human,'
+                   '**only** to you. The subject of your note is: {specific}'}
         note = self.reply(message)
         print(note)
 
@@ -76,8 +88,11 @@ class Meeseeks:
         # temporarily sets it's temperature to 0 for les "messy" result
         old_temp = self.temp
         self.temp = 0
-        message = {'role':'system', 'content': 'give a short title to this conversation. Do not provide'
-                ' **any** explanation or aditional content. Do not give **any** formating like "Title:" or similar. Do not end with a dot.'}
+        message = {'role':'system',
+                   'content': 'give a short title to this conversation.'
+                   'Do not provide **any** explanation or aditional content.'
+                   'Do not give **any** formating like "Title:" or similar.'
+                   'Do not end with a dot.'}
         title = self.reply(message)
 
         self.temp = old_temp # resets the temperature

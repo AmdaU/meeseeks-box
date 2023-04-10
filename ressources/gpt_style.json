@@ -93,8 +93,7 @@
     "margin": 2,
     "chroma": {
       "text": {
-        "color": "#C4C4C4",
-        "background_color": "#000000"
+        "color": "#C4C4C4"
       },
       "error": {
         "color": "#F1F1F1",

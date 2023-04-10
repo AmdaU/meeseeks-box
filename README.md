@@ -5,7 +5,7 @@ To interact with chat-gtp in the usual chat mode (plus some local commands) run
 
 `gpt-ping -h`
 
-#### Todo:
+# Todo:
 - [ ] Command help
 - [ ] multi-meeseeks conversation
 - [ ] Terminal feedback
