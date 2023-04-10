@@ -6,6 +6,7 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 def print_stream(content):
+    global terminal_height, terminal_width
     style_file = "ressources/gpt_style.json"
     fancy_out = subprocess.run(
         [f"glow -s '{script_dir}/{style_file}' -w {terminal_width}"],
@@ -24,20 +25,21 @@ def print_stream(content):
     number_of_new_lines = lines_num - last_lines_num
     amount_to_erase = amount_to_print - (number_of_new_lines)
 
-    print(f"\033[{amount_to_erase}A", end="\r")
+    if amount_to_erase:
+        print(f"\033[{amount_to_erase}A", end="\r")
     for line in lines[-amount_to_print:]:
         print(line)
     last_lines_num = lines_num
 
 
 def init_print():
-    get_terminal_dimentions()
+    global terminal_height, terminal_width
     global last_lines_num
+    terminal_height, terminal_width = get_terminal_dimentions()
     last_lines_num = 0
 
 
 def get_terminal_dimentions():
-    global terminal_height, terminal_width
     os = platform.system()
     match os:
         case "Linux":  # Probably works on macos as well but needs testing
@@ -49,10 +51,10 @@ def get_terminal_dimentions():
             )
         case _:
             print(f"live printing on {os} is not currently supported")
-    terminal_height, terminal_width = int(terminal_height), int(terminal_width)
+    return int(terminal_height), int(terminal_width)
 
 
-def terminal_dims_windows(): # not tested
+def terminal_dims_windows():  # not tested
     import ctypes
 
     STD_OUTPUT_HANDLE = -11
@@ -78,7 +80,6 @@ def terminal_dims_windows(): # not tested
         ) = struct.unpack("hhhhHhhhhhh", csbi.raw)
         width = right - left + 1
         height = bottom - top + 1
-        print("Terminal width:", width)
-        print("Terminal height:", height)
+        return height, width
     else:
         print("Error getting console screen buffer info")

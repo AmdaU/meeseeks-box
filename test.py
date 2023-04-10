@@ -1,14 +1,10 @@
-import numpy as np
-
-strong = (
-    "this is a very very very very very very very very very very very very very"
-    " very very very very very very very long string"
-)
+cat = 'black'
 
 
-def miam():
-    print(strong)
+def change_color():
+    global cat
+    cat = 'red'
 
 
-def again():
-    pass
+change_color()
+print(cat)

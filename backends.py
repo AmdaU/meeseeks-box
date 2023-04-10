@@ -69,13 +69,13 @@ class Meeseeks:
                 ].replace("{" + str(data_name) + "}", result)
 
     def remember(self, specific=None):
-        """store information the the long term memory"""
+        """store information the long term memory"""
         if not specific:
             specific = "the current whole conversation"
 
         message = {
             "role": "system",
-            "content": f"You shall now try to summerise something that"
+            "content": f"You shall now try to summarize something that"
             "was mentioned in this conversation. Make it concise but"
             "clear. It will later be used to remind you of what happend"
             "in the conversation. Use key points if you have to. The"
@@ -114,12 +114,12 @@ class gpt35(Meeseeks):
         api_key: str = "",
         max_number_of_tries: int = 3,
         temp: int = 1,
-        length=100,
-        timeout=10,
-        preset="default",
-        discussion=None,
+        length: int = 100,
+        timeout: int = 10,
+        preset: str = "default",
+        discussion: list = None,
     ):
-        super(gpt35, self).__init__()
+        super(gpt35, self).__init__()  # inherits from Meeseeks init
         if api_key == "":
             with open(f"{script_dir}/open_ai.secrets") as secret:
                 self.api_key = secret.readline().strip("\n")
@@ -149,9 +149,9 @@ class gpt35(Meeseeks):
         elif isinstance(message, list):
             discussion.extend(message)
 
+        # sends the rely request using the openai package
         openai.api_key = self.api_key
 
-        # sends the rely request using the openai package
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=self.discussion,
@@ -160,16 +160,18 @@ class gpt35(Meeseeks):
             stream=True,  # This allows live mode and is slightly faster
         )
 
-        content_assistant = ""
+        content_assistant = ""  # the return message
 
         if live:
-            init_print()
+            init_print()  # sets text width and rests last_line_num
+        # loops over the stream in real time as the chunks comme in
         for chunk in response:
             # extract the message
             chunk_content = chunk["choices"][0]["delta"].get("content", "")
             content_assistant += chunk_content
             if live:
-                print_stream(content_assistant)
+                print_stream(content_assistant)  # Print content as it comes
+
         message = {"role": "assistant", "content": content_assistant}
         self.discussion.append(message)
 
