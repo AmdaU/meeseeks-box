@@ -14,5 +14,5 @@ To interact with chat-gtp in the usual chat mode (plus some local commands) run
 - [x] Implement `stream` api
 
 - Live mode:
-	- [ ] make live less bugy
+	- [x] make live less bugy
 	- [ ] implement code parsing

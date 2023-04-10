@@ -69,7 +69,7 @@ while True:
     content_assistant, code_blocks = parser.code(content_assistant)
     # print the output so that it is  ✨ p r e t t y ✨
     if not args.live:
-        subprocess.run(["glow -s '/home/amda/.config/glow/gpt_style.json'"], shell=True, input=content_assistant.encode('utf-8'))
+        subprocess.run(["glow"], shell=True, input=content_assistant.encode('utf-8'))
 
     if not code_blocks:
         continue
