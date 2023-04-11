@@ -4,12 +4,12 @@ import sys
 from code import execute_code
 
 
-def code(markdown_string:str) -> tuple[str, list[tuple]]:
-    '''
+def code(markdown_string: str) -> tuple[str, list[tuple]]:
+    """
     Identifies markdown code blocks and tags them with a number.
     Returns the annotated markdown and a list of the code block in the format:
     (language, code)
-    '''
+    """
     # regex pattern of a code cell
     code_block = r"(```(?P<language>[\w+#-]+?)? ?\n(?P<code>(?![\s\S]```[\s\S])[\s\S]+?)?\n)```"
 
@@ -23,7 +23,7 @@ def code(markdown_string:str) -> tuple[str, list[tuple]]:
     count = iter(range(len(matches)))
 
     def append_cell_number(match):
-        return match.groups()[0] + f'\n[{next(count)}]\n```'
+        return match.groups()[0] + f"\n[{next(count)}]\n```"
 
     new_text = re.sub(code_block, append_cell_number, markdown_string)
 
@@ -31,11 +31,11 @@ def code(markdown_string:str) -> tuple[str, list[tuple]]:
 
 
 def command(command: str, meeseeks=None, code_blocks=None) -> None:
-    '''Parses user commands'''
+    """Parses user commands"""
     # raw string (with /) should be passed
-    if not command[0] == '/':
-        raise(Exception('This function should not have been called...'))
-    command_args = command[1:].split(' ')
+    if not command[0] == "/":
+        raise (Exception("This function should not have been called..."))
+    command_args = command[1:].split(" ")
     command_name = command_args.pop(0)
 
     # most commands (even if not all) require a that a meeseeks was passed
@@ -45,30 +45,30 @@ def command(command: str, meeseeks=None, code_blocks=None) -> None:
         return bool(meeseeks)
 
     match command_name:
-        case 'exit':
+        case "exit":
             sys.exit(0)
-        case 'save':
+        case "save":
             if ensure_meeseeks(command_name):
                 meeseeks.save_discussion()
-        case 'remember':
+        case "remember":
             if ensure_meeseeks(command_name):
-                meeseeks.remember(' '.join(command_args))
-        case 'set':
+                meeseeks.remember(" ".join(command_args))
+        case "set":
             if ensure_meeseeks(command_name):
                 setattr(meeseeks, command_args[0], eval(command_args[1]))
-        case 'get':
+        case "get":
             if ensure_meeseeks(command_name):
                 attr = getattr(meeseeks, command_args[0])
                 print(attr)
-        case 'title':
+        case "title":
             if ensure_meeseeks(command_name):
-                meeseeks.title()
-        case 'code':
+                meeseeks.title
+        case "code":
             subcommand = command_args.pop(0)
             match subcommand:
-                case 'exec':
+                case "exec":
                     execute_code(*code_blocks[int(command_args[0])])
                 case _:
-                    print('subcommand doesn\'t exist')
+                    print("subcommand doesn't exist")
         case _:
-            print('this command doesn\'t exist')
+            print("this command doesn't exist")

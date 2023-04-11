@@ -10,9 +10,10 @@ To interact with chat-gtp in the usual chat mode (plus some local commands) run
 - [ ] multi-meeseeks conversation
 - [ ] Terminal feedback
 - [ ] Add hyperlinks to run command ?
+- [ ] Summon other messeks
 - [x] Make glow code block *blockier* 
 - [x] Implement `stream` api
 
 - Live mode:
 	- [x] make live less bugy
-	- [ ] implement code parsing
+	- [x] implement code parsing

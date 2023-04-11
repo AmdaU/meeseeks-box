@@ -5,13 +5,16 @@ import datetime
 import functools
 import openai
 from fancy_print import init_print, print_stream
+from collections import OrderedDict
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 class Meeseeks:
     def __init__(self):
-        self.archive = {}
+        self.archive = (
+            OrderedDict()
+        )  # The dict is ordered so the title is first
         self.archive_file = None
 
     def reply(self, message: str):
@@ -30,14 +33,22 @@ class Meeseeks:
 
     def save_discussion(self):
         """saves the current discussion along with other info to a file"""
-        self.archive["discussion"] = self.discussion
         if not self.archive_file:
             # the filename is simply the current time, which isn't a great name
             self.archive["title"] = self.title
             filename = str(datetime.datetime.now()).replace(" ", "_")
-            self.archive_file = f"{script_dir}/archive/{filename}"
+            self.archive_file = f"{script_dir}/archive/{filename}.json"
+        self.archive["discussion"] = self.discussion
         with open(self.archive_file, "w+") as file:
-            json.dump(self.archive, file)
+            print(self.archive)
+            content = json.dumps(self.archive)
+            formated = subprocess.run(
+                ["jq"],
+                shell=True,
+                capture_output=True,
+                input=content.encode("utf-8"),
+            ).stdout.decode()
+            file.write(formated)
 
     def create_new_Meeseeks(self):
         pass
@@ -96,7 +107,7 @@ class Meeseeks:
             "role": "system",
             "content": "give a short title to this conversation."
             "Do not provide **any** explanation or aditional content."
-            'Do not give **any** formating like "Title:" or similar.'
+            "Do not give **any** formating like 'Title:' or similar."
             "Do not end with a dot.",
         }
         title = self.reply(message)
@@ -141,9 +152,11 @@ class gpt35(Meeseeks):
         else:
             self.load_preset(preset)
 
-    def reply(self, message: str | list = None, live: bool = False) -> str:
+    def reply(
+        self, message: str | list = None, live: bool = False, keep_reply=None
+    ) -> str:
         # additional message will not be remembered in the meeseeks memory
-        discussion = self.discussion
+        discussion = self.discussion.copy()
         if isinstance(message, dict):
             discussion.append(message)
         elif isinstance(message, list):
@@ -154,7 +167,7 @@ class gpt35(Meeseeks):
 
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
-            messages=self.discussion,
+            messages=discussion,
             temperature=self.temp,
             max_tokens=self.length,
             stream=True,  # This allows live mode and is slightly faster
@@ -172,8 +185,14 @@ class gpt35(Meeseeks):
             if live:
                 print_stream(content_assistant)  # Print content as it comes
 
-        message = {"role": "assistant", "content": content_assistant}
-        self.discussion.append(message)
+        # If not specified, reply is not kept when a additional message is
+        # passed
+        if keep_reply is None:
+            keep_reply = not message
+
+        if keep_reply:
+            message = {"role": "assistant", "content": content_assistant}
+            self.discussion.append(message)
 
         return content_assistant
 
