@@ -42,6 +42,15 @@ class Meeseeks:
             # the filename is simply the current time, which isn't a great name
             filename = str(datetime.datetime.now()).replace(" ", "_")
             self.archive_file = f"{script_dir}/archive/{filename}.json"
+            logger.log(
+                "system",
+                f"The discussion has ben saved to archive/{filename}.json",
+            )
+        else:
+            logger.log(
+                "system",
+                f"savefile has been updated",
+            )
         self.archive["discussion"] = self.discussion
         self.archive["notes"] = self.notes
         with open(self.archive_file, "w+") as file:
@@ -53,9 +62,6 @@ class Meeseeks:
                 input=content.encode("utf-8"),
             ).stdout.decode()
             file.write(formated)
-        logger.log(
-            "system", f"The discussion has ben saved to archive/{filename}.json"
-        )
 
     def create_new_Meeseeks(self):
         pass

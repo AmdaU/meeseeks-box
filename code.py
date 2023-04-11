@@ -1,10 +1,12 @@
 import subprocess
 
 def execute_code(language, code):
+    out = None
     match language:
         case 'py' | 'python':
-            subprocess.run([language], shell=True, input=code.encode('utf-8'))
+            out = subprocess.run([language], shell=True, input=code.encode('utf-8'), capture_output=True)
         case 'sh' | 'fish' | 'bash' | 'shell':
-            subprocess.run([language], shell=True, input=code.encode('utf-8'))
+            out =subprocess.run([language], shell=True, input=code.encode('utf-8'), capture_output=True)
         case _:
             print("This language is not supported yet")
+    return out

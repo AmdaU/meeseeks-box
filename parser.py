@@ -60,15 +60,10 @@ def command(command: str, meeseeks=None, code_blocks=None) -> None:
             if ensure_meeseeks(command_name):
                 attr = getattr(meeseeks, command_args[0])
                 print(attr)
-        case "title":
-            if ensure_meeseeks(command_name):
-                meeseeks.title
-        case "code":
-            subcommand = command_args.pop(0)
-            match subcommand:
-                case "exec":
-                    execute_code(*code_blocks[int(command_args[0])])
-                case _:
-                    print("subcommand doesn't exist")
+        case "exec":
+            out = execute_code(*code_blocks[int(command_args[0])])
+            out_str = out.stdout.decode()
+            print(out_str)
+            meeseeks.tell(out_str, role="system")
         case _:
             print("this command doesn't exist")

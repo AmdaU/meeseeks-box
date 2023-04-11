@@ -13,7 +13,8 @@ To interact with chat-gtp in the usual chat mode (plus some local commands) run
 - [ ] Summon other messeks
 - [x] Make glow code block *blockier* 
 - [x] Implement `stream` api
-- [ ] Add a method to load conversations
+- [ ] Add a method to load conversation
+- [ ] Add a token counter
 
 - Live mode:
 	- [x] make live less bugy
