@@ -1,24 +1,11 @@
-#!/home/amda/Documents/Projects/gpt/.venv/bin/python
+#!/usr/bin/python
 import json
 import argparse
 import os
 import subprocess
 import parser
 import backends
-from timeit import default_timer as timer
-from code import execute_code
-from loguru import logger
-import sys
-
-
-logger.remove()
-logger.level("system", no=38, color="<yellow>")
-_ = logger.add(
-    sys.stderr,
-    format="<b><yellow>{level}</yellow></b>: {message}",
-    filter=lambda record: record["level"].name == "system",
-)
-
+from custom_logging import logger
 
 # Get the path to the directory were this file is located
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -94,7 +81,7 @@ while True:
             shell=True,
             input=content_assistant.encode("utf-8"),
         )
-        print('')
+        print("")
 
     if not code_blocks:
         continue

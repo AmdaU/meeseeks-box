@@ -52,7 +52,7 @@ def command(command: str, meeseeks=None, code_blocks=None) -> None:
                 meeseeks.save_discussion()
         case "remember":
             if ensure_meeseeks(command_name):
-                meeseeks.remember(" ".join(command_args))
+                meeseeks.remember(specific=" ".join(command_args))
         case "set":
             if ensure_meeseeks(command_name):
                 setattr(meeseeks, command_args[0], eval(command_args[1]))

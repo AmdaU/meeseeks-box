@@ -6,6 +6,8 @@ import functools
 import openai
 from fancy_print import init_print, print_stream
 from collections import OrderedDict
+from custom_logging import logger
+
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -16,6 +18,8 @@ class Meeseeks:
             OrderedDict()
         )  # The dict is ordered so the title is first
         self.archive_file = None
+        self.name = "Meeseeks"
+        self.notes = []
 
     def reply(self, message: str):
         """
@@ -33,14 +37,14 @@ class Meeseeks:
 
     def save_discussion(self):
         """saves the current discussion along with other info to a file"""
+        self.archive["title"] = self.title
         if not self.archive_file:
             # the filename is simply the current time, which isn't a great name
-            self.archive["title"] = self.title
             filename = str(datetime.datetime.now()).replace(" ", "_")
             self.archive_file = f"{script_dir}/archive/{filename}.json"
         self.archive["discussion"] = self.discussion
+        self.archive["notes"] = self.notes
         with open(self.archive_file, "w+") as file:
-            print(self.archive)
             content = json.dumps(self.archive)
             formated = subprocess.run(
                 ["jq"],
@@ -49,6 +53,9 @@ class Meeseeks:
                 input=content.encode("utf-8"),
             ).stdout.decode()
             file.write(formated)
+        logger.log(
+            "system", f"The discussion has ben saved to archive/{filename}.json"
+        )
 
     def create_new_Meeseeks(self):
         pass
@@ -86,15 +93,18 @@ class Meeseeks:
 
         message = {
             "role": "system",
-            "content": f"You shall now try to summarize something that"
+            "content": "You shall now try to summarize something that"
             "was mentioned in this conversation. Make it concise but"
             "clear. It will later be used to remind you of what happend"
             "in the conversation. Use key points if you have to. The"
             "information does **not** need to be clear to a human,"
-            "**only** to you. The subject of your note is: {specific}",
+            f"**only** to you. The subject of your note is: {specific}",
         }
         note = self.reply(message)
-        print(note)
+        self.notes.append(note)
+        logger.log(
+            "system", f"{self.name} has taken note of {specific}\nNote: {note}"
+        )
 
     @property
     @functools.lru_cache()  # Once generated, the title stays
