@@ -145,6 +145,7 @@ class gpt35(Meeseeks):
         timeout: int = 10,
         preset: str = "default",
         discussion: list = None,
+        live: bool = False,
     ):
         super(gpt35, self).__init__()  # inherits from Meeseeks init
         if api_key == "":
@@ -161,6 +162,7 @@ class gpt35(Meeseeks):
         self.temp = temp
         self.length = length
         self.timeout = timeout
+        self.live = live
 
         # preset argument will be overident by discussion
         if discussion:
@@ -168,15 +170,18 @@ class gpt35(Meeseeks):
         else:
             self.load_preset(preset)
 
-    def reply(
-        self, message: str | list = None, live: bool = False, keep_reply=None
-    ) -> str:
+    def reply(self, message: str | list = None, keep_reply=None) -> str:
         # additional message will not be remembered in the meeseeks memory
         discussion = self.discussion.copy()
         if isinstance(message, dict):
             discussion.append(message)
         elif isinstance(message, list):
             discussion.extend(message)
+
+        # If not specified, reply is not kept when a additional message is
+        # passed
+        if keep_reply is None:
+            keep_reply = not message
 
         # sends the rely request using the openai package
         openai.api_key = self.api_key
@@ -191,20 +196,16 @@ class gpt35(Meeseeks):
 
         content_assistant = ""  # the return message
 
-        if live:
+        if self.live and keep_reply:
             init_print()  # sets text width and rests last_line_num
         # loops over the stream in real time as the chunks comme in
         for chunk in response:
             # extract the message
             chunk_content = chunk["choices"][0]["delta"].get("content", "")
             content_assistant += chunk_content
-            if live:
+            if self.live and keep_reply:
                 print_stream(content_assistant)  # Print content as it comes
 
-        # If not specified, reply is not kept when a additional message is
-        # passed
-        if keep_reply is None:
-            keep_reply = not message
 
         if keep_reply:
             message = {"role": "assistant", "content": content_assistant}

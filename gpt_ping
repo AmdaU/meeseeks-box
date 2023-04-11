@@ -62,6 +62,7 @@ meeseeks = backends.gpt35(
     discussion=args.message,
     length=args.response_length,
     temp=args.temperature,
+    live=args.live,
 )
 code_blocks = None
 # Main discussion loop --------------------------------------------------------
@@ -71,7 +72,7 @@ while True:
         continue
 
     meeseeks.tell(content_user)
-    content_assistant = meeseeks.reply(live=args.live)
+    content_assistant = meeseeks.reply()
 
     content_assistant, code_blocks = parser.code(content_assistant)
     # print the output so that it is  ✨ p r e t t y ✨
@@ -82,18 +83,3 @@ while True:
             input=content_assistant.encode("utf-8"),
         )
         print("")
-
-    if not code_blocks:
-        continue
-
-    language, code = code_blocks[-1]
-
-    # execute = input(f'System: a {language} code cell was found,'
-    # 'would you like to execute it? (y/N)')
-
-    # if execute.lower() not in ['y', 'yes']:
-    # continue
-
-    # execute_code(language, code)
-
-    # Check for code blocks in the answer

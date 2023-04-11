@@ -65,5 +65,13 @@ def command(command: str, meeseeks=None, code_blocks=None) -> None:
             out_str = out.stdout.decode()
             print(out_str)
             meeseeks.tell(out_str, role="system")
+        case "reply":
+            msg = meeseeks.reply()
+            if not meeseeks.live:
+                subprocess.run(
+                    [f"glow -s '{script_dir}/ressources/style.json'"],
+                    shell=True,
+                    input=msg.encode("utf-8"),
+                )
         case _:
             print("this command doesn't exist")
