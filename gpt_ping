@@ -6,6 +6,7 @@ import subprocess
 import parser
 import backends
 from custom_logging import logger
+import sys
 
 # Get the path to the directory were this file is located
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -50,11 +51,20 @@ arg_parser.add_argument(
 arg_parser.add_argument(
     "-m", "--message", help="override preset and send message", type=str
 )
+arg_parser.add_argument(
+    "--terminal",
+    help="terminal acces",
+    default=False,
+    action="store_true",
+)
+
 
 args = arg_parser.parse_args()
 
 if args.live:
     logger.log("system", "Live feature is expiremental, expect buginess")
+
+live = args.live
 
 # initiate meeseeks instance
 meeseeks = backends.gpt35(
@@ -62,24 +72,72 @@ meeseeks = backends.gpt35(
     discussion=args.message,
     length=args.response_length,
     temp=args.temperature,
-    live=args.live,
+    live=live,
 )
 code_blocks = None
+action = "USER"
+failure_counter = 0
+if args.terminal:
+    reply_is_action_type = True
+
 # Main discussion loop --------------------------------------------------------
 while True:
-    if (content_user := input("> "))[0] == "/":
-        parser.command(content_user, meeseeks=meeseeks, code_blocks=code_blocks)
-        continue
+    print(action)
+    match action:
+        case "USER":
+            failure_counter = 0
+            if (content_user := input("> "))[0] == "/":
+                parser.command(
+                    content_user, meeseeks=meeseeks, code_blocks=code_blocks
+                )
+                continue
+            meeseeks.tell(content_user)
+            if args.terminal:
+                action = "ACTION"
+            else:
+                action = "REPLY"
+            continue
 
-    meeseeks.tell(content_user)
-    content_assistant = meeseeks.reply()
+        case "ACTION":
+            meeseeks.live = False
+            content_assistant = meeseeks.reply()
+            action = content_assistant
 
-    content_assistant, code_blocks = parser.code(content_assistant)
-    # print the output so that it is  ✨ p r e t t y ✨
-    if not args.live:
-        subprocess.run(
-            [f"glow -s '{script_dir}/ressources/style.json'"],
-            shell=True,
-            input=content_assistant.encode("utf-8"),
-        )
-        print("")
+        case "REPLY":
+            failure_counter = 0
+            meeseeks.live = live
+            content_assistant = meeseeks.reply()
+            content_assistant, code_blocks = parser.code(content_assistant)
+
+            # print the output so that it is  ✨ p r e t t y ✨
+            if not meeseeks.live:
+                subprocess.run(
+                    [f"glow -s '{script_dir}/ressources/style.json'"],
+                    shell=True,
+                    input=content_assistant.encode("utf-8"),
+                )
+                print("")
+            action = "USER"
+
+        case "COMMAND":
+            content_assistant = meeseeks.reply()
+            logger.log("system", f"Running command {content_assistant}")
+            out = subprocess.run(
+                [content_assistant], shell=True, capture_output=True
+            )
+            out_str = out.stdout.decode()
+            print(out_str)
+            meeseeks.tell(out_str, role="system")
+            action = "ACTION"
+
+        case _:
+            meeseeks.tell(
+                "You were supposed to reply with **ONLY** **one** word like REPLY or COMMAND but you gave more words. Please retry",
+                role="system",
+            )
+            logger.log("system", "Internal error, retring")
+            failure_counter += 1
+            if failure_counter > 2:
+                action = "USER"
+                continue
+            action = "ACTION"

@@ -2,6 +2,9 @@ import re
 import subprocess
 import sys
 from code import execute_code
+import os
+
+script_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 def code(markdown_string: str) -> tuple[str, list[tuple]]:
@@ -75,3 +78,13 @@ def command(command: str, meeseeks=None, code_blocks=None) -> None:
                 )
         case _:
             print("this command doesn't exist")
+
+def terminal_output(out: subprocess.CompletedProcess):
+    str_out = out.stdout.decode('utf-8')
+    lines = str_out.split("\n")
+    lines_num = len(lines)
+
+    if lines > 10:
+        print("too many lines")
+        sys.exit(1)
+
