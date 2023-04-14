@@ -5,7 +5,7 @@ import os
 import subprocess
 import parser
 import backends
-from custom_logging import logger
+import custom_logging as log
 import sys
 
 # Get the path to the directory were this file is located
@@ -62,7 +62,11 @@ arg_parser.add_argument(
 args = arg_parser.parse_args()
 
 if args.live:
-    logger.log("system", "Live feature is expiremental, expect buginess")
+    log.system("Live feature is expiremental, expect buginess")
+if args.terminal:
+    log.danger(
+        "Terminal acces is still expirimental, giving acces to your terminal to chat gpt might be very dangerous!"
+    )
 
 live = args.live
 
@@ -121,7 +125,7 @@ while True:
         case "COMMAND":
             failure_counter = 0
             content_assistant = meeseeks.reply()
-            logger.log("system", f"Running command {content_assistant}")
+            log.system(f"Running command {`content_assistant`}")
             out = subprocess.run(
                 [content_assistant], shell=True, capture_output=True
             )
@@ -134,7 +138,7 @@ while True:
                 "You were supposed to reply with **ONLY** **one** word like REPLY or COMMAND but you gave more words. Please retry",
                 role="system",
             )
-            logger.log("system", "Internal error, retring")
+            log.system("Internal error, retring")
             failure_counter += 1
             if failure_counter > 2:
                 action = "USER"
