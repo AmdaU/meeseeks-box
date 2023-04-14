@@ -82,7 +82,6 @@ if args.terminal:
 
 # Main discussion loop --------------------------------------------------------
 while True:
-    print(action)
     match action:
         case "USER":
             failure_counter = 0
@@ -120,13 +119,13 @@ while True:
             action = "USER"
 
         case "COMMAND":
+            failure_counter = 0
             content_assistant = meeseeks.reply()
             logger.log("system", f"Running command {content_assistant}")
             out = subprocess.run(
                 [content_assistant], shell=True, capture_output=True
             )
             out_str = out.stdout.decode()
-            print(out_str)
             meeseeks.tell(out_str, role="system")
             action = "ACTION"
 

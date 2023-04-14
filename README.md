@@ -8,7 +8,7 @@ To interact with chat-gtp in the usual chat mode (plus some local commands) run
 # Todo:
 - [ ] Command help
 - [ ] multi-meeseeks conversation
-- [ ] Terminal feedback
+- [x] Terminal feedback
 - [ ] Add hyperlinks to run command ?
 - [ ] Summon other messeks
 - [x] Make glow code block *blockier* 
@@ -19,3 +19,5 @@ To interact with chat-gtp in the usual chat mode (plus some local commands) run
 - Live mode:
 	- [x] make live less bugy
 	- [x] implement code parsing
+    - [ ] fix 'too long line' bug
+    - [ ] live parsing for 'action' keywords
