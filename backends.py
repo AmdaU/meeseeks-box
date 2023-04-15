@@ -6,7 +6,7 @@ import functools
 import openai
 from fancy_print import init_print, print_stream
 from collections import OrderedDict
-from custom_logging import logger
+import custom_logging as log
 
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -42,13 +42,11 @@ class Meeseeks:
             # the filename is simply the current time, which isn't a great name
             filename = str(datetime.datetime.now()).replace(" ", "_")
             self.archive_file = f"{script_dir}/archive/{filename}.json"
-            logger.log(
-                "system",
+            log.system(
                 f"The discussion has ben saved to archive/{filename}.json",
             )
         else:
-            logger.log(
-                "system",
+            log.system(
                 f"savefile has been updated",
             )
         self.archive["discussion"] = self.discussion
@@ -69,13 +67,18 @@ class Meeseeks:
     def load_preset(self, preset_name):
         """Sets up the "preset", aka info before the discussion starts"""
         # Loading the preset info from the json file
+
+        def get_data_element(thing: str | dict):
+            if isinstance(thing, dict):
+                pass
+
         presets = {}
         with open(f"{script_dir}/ressources/presets.json") as read:
             presets = json.load(read)
         preset_list = list(presets)
 
         if preset_name not in preset_list:
-            print("This preset does not exist, using default")
+            log.system("This preset does not exist, using default")
             preset_name = "default"
 
         preset = presets[preset_name]
@@ -108,9 +111,7 @@ class Meeseeks:
         }
         note = self.reply(message)
         self.notes.append(note)
-        logger.log(
-            "system", f"{self.name} has taken note of {specific}\nNote: {note}"
-        )
+        log.system(f"{self.name} has taken note of {specific}\nNote: {note}")
 
     @property
     @functools.lru_cache()  # Once generated, the title stays
@@ -205,7 +206,6 @@ class gpt35(Meeseeks):
             content_assistant += chunk_content
             if self.live and keep_reply:
                 print_stream(content_assistant)  # Print content as it comes
-
 
         if keep_reply:
             message = {"role": "assistant", "content": content_assistant}

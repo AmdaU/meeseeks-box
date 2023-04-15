@@ -1,0 +1,4 @@
+COMMAND: run a shell command. the user cannot see the output, only you
+REPLY: reply to the user
+LIST: Break a complicated taks in a list of simpler tasks
+USER: Let the user reply

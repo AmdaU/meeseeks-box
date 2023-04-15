@@ -1,4 +1,6 @@
 #!/usr/bin/python
+from prompt_toolkit import prompt
+from prompt_toolkit.history import FileHistory
 import json
 import argparse
 import os
@@ -10,7 +12,7 @@ import sys
 
 # Get the path to the directory were this file is located
 script_dir = os.path.dirname(os.path.realpath(__file__))
-
+history = FileHistory(".history.txt")
 # Argument parsing ------------------------------------------------------------
 presets = {}
 with open(f"{script_dir}/ressources/presets.json") as read:
@@ -89,7 +91,7 @@ while True:
     match action:
         case "USER":
             failure_counter = 0
-            if (content_user := input("> "))[0] == "/":
+            if (content_user := prompt("> ", history=history))[0] == "/":
                 parser.command(
                     content_user, meeseeks=meeseeks, code_blocks=code_blocks
                 )
@@ -125,7 +127,7 @@ while True:
         case "COMMAND":
             failure_counter = 0
             content_assistant = meeseeks.reply()
-            log.system(f"Running command {`content_assistant`}")
+            log.system(f"Running command `{content_assistant}`")
             out = subprocess.run(
                 [content_assistant], shell=True, capture_output=True
             )

@@ -1,5 +1,7 @@
 # Meeseeks Box:
-An interface allowing you to communicate with different large languages models easily and allowing them to communicate with one another.
+An interface allowing you to communicate with different large languages models (only chat-gpt supported currently) easily and allowing them to communicate with one another.
+
+The `gpt_ping`
 
 To interact with chat-gtp in the usual chat mode (plus some local commands) run 
 
@@ -15,6 +17,8 @@ To interact with chat-gtp in the usual chat mode (plus some local commands) run
 - [x] Implement `stream` api
 - [ ] Add a method to load conversation
 - [ ] Add a token counter
+- [ ] Add other llm
+- [ ] find a way to display images
 
 - Live mode:
 	- [x] make live less bugy

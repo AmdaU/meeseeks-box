@@ -3,6 +3,7 @@ import subprocess
 import sys
 from code import execute_code
 import os
+import custom_logging as log
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -44,7 +45,7 @@ def command(command: str, meeseeks=None, code_blocks=None) -> None:
     # most commands (even if not all) require a that a meeseeks was passed
     def ensure_meeseeks(name):
         if not meeseeks:
-            print('No meeseeks was given, cannot "{name}"')
+            log.system('No meeseeks was given, cannot "{name}"')
         return bool(meeseeks)
 
     match command_name:
@@ -77,14 +78,21 @@ def command(command: str, meeseeks=None, code_blocks=None) -> None:
                     input=msg.encode("utf-8"),
                 )
         case _:
-            print("this command doesn't exist")
+            log.system("this command doesn't exist")
+
 
 def terminal_output(out: subprocess.CompletedProcess):
-    str_out = out.stdout.decode('utf-8')
+    str_out = out.stdout.decode("utf-8")
     lines = str_out.split("\n")
     lines_num = len(lines)
 
-    if lines > 10:
-        print("too many lines")
+    if lines_num > 10:
+        log.system("too many lines")
         sys.exit(1)
 
+
+def action(gtp_reply: str) -> str:
+    action_pattern = "([A-Z]+:)"
+    match = re.search(action_pattern, gtp_reply)
+    new_text = re.sub(action_pattern, "", gtp_reply)
+    return new_text, match.groups()[0] if match else None
