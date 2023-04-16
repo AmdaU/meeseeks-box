@@ -2,3 +2,5 @@ discussion.txt
 .venv
 archive
 __pycache__
+*.secrets
+log/
