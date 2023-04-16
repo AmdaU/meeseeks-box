@@ -19,6 +19,7 @@ To interact with chat-gtp in the usual chat mode (plus some local commands) run
 - [ ] Add a token counter
 - [ ] Add other llm
 - [ ] find a way to display images
+- [ ] Make fancy printing optional
 
 - Live mode:
 	- [x] make live less bugy

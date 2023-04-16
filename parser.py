@@ -65,8 +65,7 @@ def command(command: str, meeseeks=None, code_blocks=None) -> None:
                 attr = getattr(meeseeks, command_args[0])
                 print(attr)
         case "exec":
-            out = execute_code(*code_blocks[int(command_args[0])])
-            out_str = out.stdout.decode()
+            out_str = execute_code(*code_blocks[int(command_args[0])], std_out=False)
             print(out_str)
             meeseeks.tell(out_str, role="system")
         case "reply":
@@ -91,8 +90,8 @@ def terminal_output(out: subprocess.CompletedProcess):
         sys.exit(1)
 
 
-def action(gtp_reply: str) -> str:
-    action_pattern = "([A-Z]+:)"
+def action(gtp_reply: str) -> tuple[str, str]:
+    action_pattern = "([A-Z]+):"
     match = re.search(action_pattern, gtp_reply)
     new_text = re.sub(action_pattern, "", gtp_reply)
     return new_text, match.groups()[0] if match else None

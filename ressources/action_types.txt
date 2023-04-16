@@ -1,4 +1,3 @@
-COMMAND: run a shell command. the user cannot see the output, only you
-REPLY: reply to the user
-LIST: Break a complicated taks in a list of simpler tasks
+COMMAND: run a shell command. The string follwing ":" will be ran directly as a shell command.
 USER: Let the user reply
+LIST: Break a complicated taks in a list of simpler tasks. after the ":" should be a markdown list ("-") of the subtask you want to accomplish

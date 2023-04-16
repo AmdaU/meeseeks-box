@@ -8,11 +8,10 @@ import subprocess
 import parser
 import backends
 import custom_logging as log
-import sys
 
 # Get the path to the directory were this file is located
 script_dir = os.path.dirname(os.path.realpath(__file__))
-history = FileHistory(".history.txt")
+history = FileHistory(f"{script_dir}/log/history.txt")
 # Argument parsing ------------------------------------------------------------
 presets = {}
 with open(f"{script_dir}/ressources/presets.json") as read:
@@ -59,7 +58,12 @@ arg_parser.add_argument(
     default=False,
     action="store_true",
 )
-
+arg_parser.add_argument(
+    "--multiline",
+    help="enable mutiline input (`meta+enter` or `Esc` than `enter` to submit)",
+    default=False,
+    action="store_true",
+)
 
 args = arg_parser.parse_args()
 
@@ -91,56 +95,59 @@ while True:
     match action:
         case "USER":
             failure_counter = 0
-            if (content_user := prompt("> ", history=history))[0] == "/":
+            if (
+                content_user := prompt(
+                    "> ", history=history, multiline=args.multiline
+                )
+            )[0] == "/":
                 parser.command(
                     content_user, meeseeks=meeseeks, code_blocks=code_blocks
                 )
                 continue
             meeseeks.tell(content_user)
-            if args.terminal:
-                action = "ACTION"
-            else:
-                action = "REPLY"
+            action = "ACTION"
             continue
 
         case "ACTION":
-            meeseeks.live = False
-            content_assistant = meeseeks.reply()
-            action = content_assistant
+            content_assistant, action = meeseeks.reply(
+                action_mode=args.terminal
+            )
 
-        case "REPLY":
+        case None:
             failure_counter = 0
-            meeseeks.live = live
-            content_assistant = meeseeks.reply()
             content_assistant, code_blocks = parser.code(content_assistant)
 
             # print the output so that it is  ✨ p r e t t y ✨
-            if not meeseeks.live:
-                subprocess.run(
-                    [f"glow -s '{script_dir}/ressources/style.json'"],
-                    shell=True,
-                    input=content_assistant.encode("utf-8"),
-                )
-                print("")
+            # if not meeseeks.live:
+            # subprocess.run(
+            # [f"glow -s '{script_dir}/ressources/style.json'"],
+            # shell=True,
+            # input=content_assistant.encode("utf-8"),
+            # )
+            # print("")
             action = "USER"
+
+        case "LIST":
+            print(content_assistant)
+            meeseeks.tell("You shall now do the first point", role="system")
 
         case "COMMAND":
             failure_counter = 0
-            content_assistant = meeseeks.reply()
             log.system(f"Running command `{content_assistant}`")
             out = subprocess.run(
                 [content_assistant], shell=True, capture_output=True
             )
             out_str = out.stdout.decode()
-            meeseeks.tell(out_str, role="system")
+            meeseeks.tell("output was:" + out_str, role="system")
             action = "ACTION"
 
         case _:
             meeseeks.tell(
-                "You were supposed to reply with **ONLY** **one** word like REPLY or COMMAND but you gave more words. Please retry",
+                "You did not pick a valid action. You must **ALWAYS** reply in the form `ACTION:content` by picking from one the following actions; COMMAND, USER",
                 role="system",
             )
-            log.system("Internal error, retring")
+            log.system(f"Internal error, retring, (action = {action})")
+            log.system(f"assitant tried to say: '{content_assistant}'")
             failure_counter += 1
             if failure_counter > 2:
                 action = "USER"

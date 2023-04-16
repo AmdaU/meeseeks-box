@@ -4,9 +4,11 @@ import subprocess
 import datetime
 import functools
 import openai
+import parser
 from fancy_print import init_print, print_stream
 from collections import OrderedDict
 import custom_logging as log
+from code import execute_code
 
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -47,7 +49,7 @@ class Meeseeks:
             )
         else:
             log.system(
-                f"savefile has been updated",
+                "savefile has been updated",
             )
         self.archive["discussion"] = self.discussion
         self.archive["notes"] = self.notes
@@ -68,9 +70,17 @@ class Meeseeks:
         """Sets up the "preset", aka info before the discussion starts"""
         # Loading the preset info from the json file
 
-        def get_data_element(thing: str | dict):
-            if isinstance(thing, dict):
-                pass
+        def get_data(process: dict) -> str:
+            out = process["content"]
+            if "data" in process:
+                for key, subprocess in process["data"].items():
+                    result = get_data(subprocess)
+                    out = out.replace("{" + str(key) + "}", result)
+
+            if "exec" in process:
+                out = execute_code(process["exec"], out)
+
+            return out
 
         presets = {}
         with open(f"{script_dir}/ressources/presets.json") as read:
@@ -83,17 +93,12 @@ class Meeseeks:
 
         preset = presets[preset_name]
 
-        self.discussion = preset["prompt"]
-
-        # Some presets will pull 'live' data from the system of elsewhere
-        if "data" in preset:
-            for data_name, data_command in preset["data"].items():
-                result = subprocess.run(
-                    [data_command], shell=True, capture_output=True
-                ).stdout.decode()
-                self.discussion[0]["content"] = self.discussion[0][
-                    "content"
-                ].replace("{" + str(data_name) + "}", result)
+        self.discussion = []
+        for message in preset["prompt"]:
+            message["content"] = get_data(message)
+            if "data" in message:
+                del message["data"]
+            self.discussion.append(message)
 
     def remember(self, specific=None):
         """store information the long term memory"""
@@ -171,7 +176,14 @@ class gpt35(Meeseeks):
         else:
             self.load_preset(preset)
 
-    def reply(self, message: str | list = None, keep_reply=None) -> str:
+    def reply(
+        self,
+        message: str | list = None,
+        keep_reply: bool | None = None,
+        action_mode: bool = False,
+    ) -> str:
+        action = None
+        looking_for_action = action_mode
         # additional message will not be remembered in the meeseeks memory
         discussion = self.discussion.copy()
         if isinstance(message, dict):
@@ -184,6 +196,8 @@ class gpt35(Meeseeks):
         if keep_reply is None:
             keep_reply = not message
 
+        if self.live and keep_reply:
+            init_print()  # sets text width and rests last_line_num
         # sends the rely request using the openai package
         openai.api_key = self.api_key
 
@@ -196,22 +210,25 @@ class gpt35(Meeseeks):
         )
 
         content_assistant = ""  # the return message
-
-        if self.live and keep_reply:
-            init_print()  # sets text width and rests last_line_num
         # loops over the stream in real time as the chunks comme in
         for chunk in response:
             # extract the message
             chunk_content = chunk["choices"][0]["delta"].get("content", "")
             content_assistant += chunk_content
-            if self.live and keep_reply:
+            if looking_for_action:
+                content, action = parser.action(content_assistant)
+                if (action is not None) or (len(content_assistant) > 10):
+                    log.system(f"action is {action}")
+                    looking_for_action = False
+                    content_assistant = content
+            if self.live and keep_reply and action is None and not looking_for_action:
                 print_stream(content_assistant)  # Print content as it comes
 
         if keep_reply:
             message = {"role": "assistant", "content": content_assistant}
             self.discussion.append(message)
 
-        return content_assistant
+        return content_assistant, action
 
 
 class llama(Meeseeks):
