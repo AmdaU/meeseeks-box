@@ -14,10 +14,16 @@ _ = logger.add(
     format="<b><red>DANGER</red></b>: {message}",
     filter=lambda record: record["level"].name == "danger",
 )
+logger.level("error", no=38, color="<red>")
+_ = logger.add(
+    sys.stderr,
+    format="<b><red>ERROR</red></b>: {message}",
+    filter=lambda record: record["level"].name == "error",
+)
 
 # more "intuitive" fucntion to call the logger
 
-log_types = ["system", "danger"]
+log_types = ["system", "danger", "error"]
 
 for log_type in log_types:
     exec(

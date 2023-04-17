@@ -1,4 +1,3 @@
-import os
 import json
 import subprocess
 import datetime
@@ -9,19 +8,36 @@ from fancy_print import init_print, print_stream
 from collections import OrderedDict
 import custom_logging as log
 from code import execute_code
-
-
-script_dir = os.path.dirname(os.path.realpath(__file__))
+from config import script_dir
+import sys
 
 
 class Meeseeks:
-    def __init__(self):
+    def __init__(
+        self,
+        temp: int = 1,  # temprature of the llm
+        length: int = 100,  # maximum token in reply
+        timeout: int = 10,  # maximum time to reply
+        preset: str = "default",  # preset
+        discussion: list = None,  # overides the preset with a custom discussion
+        live: bool = False,  # If live printing is enabled
+    ):
         self.archive = (
             OrderedDict()
         )  # The dict is ordered so the title is first
         self.archive_file = None
         self.name = "Meeseeks"
         self.notes = []
+        self.temp = temp
+        self.length = length
+        self.timeout = timeout
+        self.live = live
+
+        # preset argument will be overident by discussion
+        if discussion:
+            self.discussion = discussion
+        else:
+            self.load_preset(preset)
 
     def reply(self, message: str):
         """
@@ -82,13 +98,16 @@ class Meeseeks:
 
             return out
 
+        # loads prestes from preset file
         presets = {}
         with open(f"{script_dir}/ressources/presets.json") as read:
             presets = json.load(read)
         preset_list = list(presets)
 
         if preset_name not in preset_list:
-            log.system("This preset does not exist, using default")
+            log.system(
+                f"The preset `{preset_name}` does not exist, using default"
+            )
             preset_name = "default"
 
         preset = presets[preset_name]
@@ -144,7 +163,7 @@ class gpt35(Meeseeks):
 
     def __init__(
         self,
-        api_key: str = "",
+        api_key: str | None = None,
         max_number_of_tries: int = 3,
         temp: int = 1,
         length: int = 100,
@@ -153,28 +172,27 @@ class gpt35(Meeseeks):
         discussion: list = None,
         live: bool = False,
     ):
-        super(gpt35, self).__init__()  # inherits from Meeseeks init
-        if api_key == "":
-            with open(f"{script_dir}/open_ai.secrets") as secret:
-                self.api_key = secret.readline().strip("\n")
-        else:
-            self.api_key = api_key
+        super(gpt35, self).__init__(
+            temp, length, timeout, preset, discussion, live
+        )  # inherits from Meeseeks init
+
+        # Loads open ai api key
+        if api_key is None:
+            from config import open_ai_key as api_key
+
+            if api_key == "":
+                log.error(
+                    "In order to use the gpt 3.5 model, you need to set your api_key in `paramters.dat`"
+                )
+                sys.exit(1)
+
+        self.api_key = api_key
 
         self.max_number_of_tries = max_number_of_tries
         self.headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key}",
         }
-        self.temp = temp
-        self.length = length
-        self.timeout = timeout
-        self.live = live
-
-        # preset argument will be overident by discussion
-        if discussion:
-            self.discussion = discussion
-        else:
-            self.load_preset(preset)
 
     def reply(
         self,
@@ -221,7 +239,12 @@ class gpt35(Meeseeks):
                     log.system(f"action is {action}")
                     looking_for_action = False
                     content_assistant = content
-            if self.live and keep_reply and action is None and not looking_for_action:
+            if (
+                self.live
+                and keep_reply
+                and action is None
+                and not looking_for_action
+            ):
                 print_stream(content_assistant)  # Print content as it comes
 
         if keep_reply:
