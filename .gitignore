@@ -4,3 +4,4 @@ archive
 __pycache__
 *.secrets
 log/
+parameters.dat
