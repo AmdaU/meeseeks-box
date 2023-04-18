@@ -22,9 +22,7 @@ class Meeseeks:
         discussion: list = None,  # overides the preset with a custom discussion
         live: bool = False,  # If live printing is enabled
     ):
-        self.archive = (
-            OrderedDict()
-        )  # The dict is ordered so the title is first
+        self.archive = OrderedDict()  # Ordered so the title is first
         self.archive_file = None
         self.name = "Meeseeks"
         self.notes = []
@@ -44,53 +42,51 @@ class Meeseeks:
         message: str | list = None,
         keep_reply: bool | None = None,
         action_mode: bool = False,
-    ):
+    ) -> tuple[str, str | None]:
         """
         This method is the most important for a meeseeks as it it the one
-        who actually request a reply from the llm this method however
-        obviously depends on the specif backends and needs to be reimplemented
-        every time, this is just a placeholder
+        who actually request a reply from the llm. The specific details for
+        requesting a reply are in `self.get_response`. Outputs the (reply, action)
         """
         action = None
         looking_for_action = action_mode
+
         # additional message will not be remembered in the meeseeks memory
+        # if you want it to be remembered, use `.tell()` instead
         discussion = self.discussion.copy()
         if isinstance(message, dict):
             discussion.append(message)
         elif isinstance(message, list):
             discussion.extend(message)
 
-        # If not specified, reply is not kept when a additional message is
+        # Unless specified, reply is not kept if an additional message is
         # passed
         if keep_reply is None:
             keep_reply = not message
 
         if self.live and keep_reply:
             init_print()  # sets text width and rests last_line_num
-        # sends the rely request using the openai package
 
-        content_assistant = ""  # the return message
-        # loops over the stream in real time as the chunks comme in
 
         response = self.get_response(live=self.live, discussion=discussion)
 
-        for chunk in response:
-            # extract the message
-            content_assistant += chunk
-            if looking_for_action:
-                content, action = parser.action(content_assistant)
-                if (action is not None) or (len(content_assistant) > 10):
-                    log.system(f"action is {action}")
-                    looking_for_action = False
-                    content_assistant = content
-            if (
-                self.live
-                and keep_reply
-                and action is None
-                and not looking_for_action
-            ):
-                print_stream(content_assistant)  # Print content as it come
+        if self.live:
+            content_assistant = ""  # the return message
+            # loops over the stream in real time as the chunks comme in
+            for chunk in response:
+                content_assistant += chunk
+                # extract the current action from the text
+                if looking_for_action:
+                    content, action = parser.action(content_assistant)
+                    if (action is not None) or (len(content_assistant) > 10):
+                        log.system(f"action is {action}")
+                        looking_for_action = False
+                        content_assistant = content
 
+                if keep_reply and action is None and not looking_for_action:
+                    print_stream(content_assistant)  # Print content as it come
+
+        # adds the reply to the discussion
         if keep_reply:
             message = {"role": "assistant", "content": content_assistant}
             self.discussion.append(message)
@@ -244,6 +240,7 @@ class gpt35(Meeseeks):
         }
 
     def get_response(self, live: bool, discussion: list):
+        # sends the rely request using the openai package
         openai.api_key = self.api_key
 
         response = openai.ChatCompletion.create(

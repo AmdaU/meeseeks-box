@@ -4,13 +4,10 @@ import platform
 import parser
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
+style_file = "ressources/style.json"
 
-
-def print_stream(content):
+def fancy_print(content):
     global terminal_height, terminal_width
-    parsed_content, _ = parser.code(content)  # parse the whole code every time
-    content = parsed_content
-    style_file = "ressources/style.json"
     fancy_out = subprocess.run(
         [f"glow -s '{script_dir}/{style_file}' -w {terminal_width}"],
         shell=True,
@@ -18,7 +15,14 @@ def print_stream(content):
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
-    fancy_string = fancy_out.stdout.decode("utf-8")
+    return fancy_out.stdout.decode("utf-8")
+
+
+def print_stream(content):
+    parsed_content, _ = parser.code(content)  # parse the whole code every time
+
+    fancy_string = fancy_print(parsed_content)
+
     lines = fancy_string.split("\n")
     lines_num = len(lines)
 
@@ -28,10 +32,12 @@ def print_stream(content):
     number_of_new_lines = lines_num - last_lines_num
     amount_to_erase = amount_to_print - (number_of_new_lines)
 
+    # overides previous lines
     if amount_to_erase:
         print(f"\033[{amount_to_erase}A", end="\r")
     for line in lines[-amount_to_print:]:
         print(line)
+
     last_lines_num = lines_num
 
 
@@ -57,7 +63,7 @@ def get_terminal_dimentions():
     return int(terminal_height), int(terminal_width)
 
 
-def terminal_dims_windows():  # not tested
+def terminal_dims_windows():  # not tested yet
     import ctypes
 
     STD_OUTPUT_HANDLE = -11
