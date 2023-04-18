@@ -1,56 +1,25 @@
+import openai
+
+from config import open_ai_key
 
 
-
-#!/usr/bin/env python
-"""
-Demonstration of how to print using the HTML class.
-"""
-from prompt_toolkit import HTML, print_formatted_text
-
-print = print_formatted_text
+openai.api_key = open_ai_key
+response = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    messages=[{"role": "user", "content": "hi"}],
+    stream=True,  # This allows live mode and is slightly faster
+)
 
 
-def title(text):
-    print(HTML("\n<u><b>{}</b></u>").format(text))
+print(type(response))
 
 
-def main():
-    title("Special formatting")
-    print(HTML("    <b>Bold</b>"))
-    print(HTML("    <blink>Blink</blink>"))
-    print(HTML("    <i>Italic</i>"))
-    print(HTML("    <reverse>Reverse</reverse>"))
-    print(HTML("    <u>Underline</u>"))
-    print(HTML("    <s>Strike</s>"))
-    print(HTML("    <hidden>Hidden</hidden> (hidden)"))
-
-    # Ansi colors.
-    title("ANSI colors")
-
-    print(HTML("    <ansired>ANSI Red</ansired>"))
-    print(HTML("    <ansiblue>ANSI Blue</ansiblue>"))
-
-    # Other named colors.
-    title("Named colors")
-
-    print(HTML("    <orange>orange</orange>"))
-    print(HTML("    <purple>purple</purple>"))
-
-    # Background colors.
-    title("Background colors")
-
-    print(HTML('    <style fg="ansiwhite" bg="ansired">ANSI Red</style>'))
-    print(HTML('    <style fg="ansiwhite" bg="ansiblue">ANSI Blue</style>'))
-
-    # Interpolation.
-    title("HTML interpolation (see source)")
-
-    print(HTML("    <i>{}</i>").format("<test>"))
-    print(HTML("    <b>{text}</b>").format(text="<test>"))
-    print(HTML("    <u>%s</u>") % ("<text>",))
-
-    print()
+def response_content():
+    for chunk in response:
+        yield chunk["choices"][0]["delta"].get("content", "")
 
 
-if __name__ == "__main__":
-    main()
+content = response_content()
+
+for i in content:
+    print(i)
