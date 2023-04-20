@@ -5,11 +5,14 @@ To interact with chat-gtp in the usual chat mode (plus some local commands) run
 
 `gpt-ping`
 
+![demonstration of gpt-ping](ressources/images/gpt-ping_demo.gif)
+
 ## Requirements
 
 Currently only works on linux (and possible MacOS)
 
 requires the [`glow`](https://github.com/charmbracelet/glow) program for printing 
+
 
 # Todo:
 - [ ] Command help
