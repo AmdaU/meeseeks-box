@@ -70,7 +70,7 @@ args = arg_parser.parse_args()
 
 if args.live:
     log.system("Live feature is expiremental, expect buginess")
-if args.terminal:
+if args.action:
     log.danger(
         "Terminal acces is still expirimental, giving acces to your terminal to chat gpt might be very dangerous!"
     )
@@ -88,7 +88,7 @@ meeseeks = backends.gpt35(
 code_blocks = None
 action = "USER"
 failure_counter = 0
-if args.terminal:
+if args.action:
     reply_is_action_type = True
 
 # Main discussion loop --------------------------------------------------------
@@ -111,7 +111,7 @@ while True:
 
         case "ACTION":
             content_assistant, action = meeseeks.reply(
-                action_mode=args.terminal
+                action_mode=args.action
             )
 
         case None:
