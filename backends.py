@@ -1,6 +1,6 @@
 import json
 import subprocess
-import datetime
+from datetime import datetime
 from functools import lru_cache
 import openai
 import parser
@@ -106,7 +106,7 @@ class Meeseeks:
         self.archive["title"] = self.title
         if not self.archive_file:
             # the filename is simply the current time, which isn't a great name
-            filename = str(datetime.datetime.now()).replace(" ", "_")
+            filename = str(datetime.now()).replace(" ", "_")
             self.archive_file = f"{script_dir}/archive/{filename}.json"
             log.system(
                 f"The discussion has ben saved to archive/{filename}.json",

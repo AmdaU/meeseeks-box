@@ -1,22 +1,18 @@
 #!/usr/bin/python
 from prompt_toolkit import prompt
 from prompt_toolkit.history import FileHistory
-import json
 from argparse import ArgumentParser
 from code import execute_code
 import parser
-import backends
+from backends import gpt35
 import custom_logging as log
-from config import script_dir
+from config import script_dir, presets
 from fancy_print import fancy_print
 
 
 # Get the path to the directory were this file is located
 history = FileHistory(f"{script_dir}/log/history.txt")
 # Argument parsing ------------------------------------------------------------
-presets = {}
-with open(f"{script_dir}/ressources/presets.json") as read:
-    presets = json.load(read)
 preset_list = list(presets)
 
 # Parses the command line arguments
@@ -78,7 +74,7 @@ if args.action:
 live = args.live
 
 # initiate meeseeks instance
-meeseeks = backends.gpt35(
+meeseeks = gpt35(
     preset=args.preset,
     discussion=args.message,
     length=args.response_length,
@@ -88,8 +84,6 @@ meeseeks = backends.gpt35(
 code_blocks = None
 action = "USER"
 failure_counter = 0
-if args.action:
-    reply_is_action_type = True
 
 # Main discussion loop --------------------------------------------------------
 while True:

@@ -1,9 +1,8 @@
 import subprocess
-import os
 import platform
 import parser
+from config import script_dir
 
-script_dir = os.path.dirname(os.path.realpath(__file__))
 style_file = "ressources/style.json"
 
 

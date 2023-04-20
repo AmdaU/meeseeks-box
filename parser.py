@@ -1,6 +1,6 @@
 import re
 from subprocess import run, CompletedProcess
-import sys
+from sys import exit
 from code import execute_code
 import custom_logging as log
 from tiktoken import get_encoding
@@ -55,7 +55,7 @@ def command(command: str, meeseeks=None, code_blocks=None) -> None:
 
     match command_name:
         case "exit":
-            sys.exit(0)
+            exit(0)
         case "save":
             if ensure_meeseeks(command_name):
                 meeseeks.save_discussion()
