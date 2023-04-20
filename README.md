@@ -23,7 +23,7 @@ requires the [`glow`](https://github.com/charmbracelet/glow) program for printin
 - [x] Make glow code block *blockier* 
 - [x] Implement `stream` api
 - [ ] Add a method to load conversation
-- [ ] Add a token counter
+- [x] Add a token counter
 - [ ] Add other llm
 - [ ] find a way to display images
 - [ ] Make fancy printing optional
@@ -32,4 +32,4 @@ requires the [`glow`](https://github.com/charmbracelet/glow) program for printin
 	- [x] make live less bugy
 	- [x] implement code parsing
     - [ ] fix 'too long line' bug
-    - [ ] live parsing for 'action' keywords
+    - [x] live parsing for 'action' keywords

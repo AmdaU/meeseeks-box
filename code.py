@@ -1,6 +1,4 @@
 import subprocess
-from config import *
-
 
 def execute_code(language, code, std_out=False):
     out = None

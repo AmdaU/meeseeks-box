@@ -1,7 +1,7 @@
 import json
 import subprocess
 import datetime
-import functools
+from functools import lru_cache
 import openai
 import parser
 from fancy_print import init_print, print_stream
@@ -9,7 +9,8 @@ from collections import OrderedDict
 import custom_logging as log
 from code import execute_code
 from config import script_dir
-import sys
+from sys import exit
+from typing import Generator
 
 
 class Meeseeks:
@@ -136,8 +137,8 @@ class Meeseeks:
         def get_data(process: dict) -> str:
             out = process["content"]
             if "data" in process:
-                for key, subprocess in process["data"].items():
-                    result = get_data(subprocess)
+                for key, subprocess_ in process["data"].items():
+                    result = get_data(subprocess_)
                     out = out.replace("{" + str(key) + "}", result)
 
             if "exec" in process:
@@ -185,7 +186,7 @@ class Meeseeks:
         log.system(f"{self.name} has taken note of {specific}\nNote: {note}")
 
     @property
-    @functools.lru_cache()  # Once generated, the title stays
+    @lru_cache()  # Once generated, the title stays
     def title(self):
         """gives a title to the current discussion"""
         # temporarily sets it's temperature to 0 for les "messy" result
@@ -231,29 +232,28 @@ class gpt35(Meeseeks):
                 log.error(
                     "In order to use the gpt 3.5 model, you need to set your api_key in `paramters.dat`"
                 )
-                sys.exit(1)
+                exit(1)
 
         self.api_key = api_key
 
-        self.max_number_of_tries = max_number_of_tries
+        self.max_number_of_tries = max_number_of_tries  # does nothing currently
         self.headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key}",
         }
 
-    def get_response(self, live: bool, discussion: list):
+    def get_response(self, live: bool, discussion: list) -> str | Generator:
         # sends the rely request using the openai package
         openai.api_key = self.api_key
 
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=discussion,
+            temperature=self.temp,
+            max_tokens=self.length,
+            stream=self.live,
+        )
         if self.live:
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=discussion,
-                temperature=self.temp,
-                max_tokens=self.length,
-                stream=True,  # This allows live mode and is slightly faster
-            )
-
             def response_content():
                 for chunk in response:
                     yield chunk["choices"][0]["delta"].get("content", "")
@@ -261,13 +261,6 @@ class gpt35(Meeseeks):
             return response_content()
 
         else:
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=discussion,
-                temperature=self.temp,
-                max_tokens=self.length,
-            )
-
             return response["choices"][0]["message"]["content"]
 
 

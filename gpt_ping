@@ -2,8 +2,8 @@
 from prompt_toolkit import prompt
 from prompt_toolkit.history import FileHistory
 import json
-import argparse
-import subprocess
+from argparse import ArgumentParser
+from code import execute_code
 import parser
 import backends
 import custom_logging as log
@@ -20,7 +20,7 @@ with open(f"{script_dir}/ressources/presets.json") as read:
 preset_list = list(presets)
 
 # Parses the command line arguments
-arg_parser = argparse.ArgumentParser()
+arg_parser = ArgumentParser()
 
 arg_parser.add_argument(
     "preset",
@@ -110,9 +110,7 @@ while True:
             continue
 
         case "ACTION":
-            content_assistant, action = meeseeks.reply(
-                action_mode=args.action
-            )
+            content_assistant, action = meeseeks.reply(action_mode=args.action)
 
         case None:
             failure_counter = 0
@@ -129,10 +127,7 @@ while True:
         case "COMMAND":
             failure_counter = 0
             log.system(f"Running command `{content_assistant}`")
-            out = subprocess.run(
-                [content_assistant], shell=True, capture_output=True
-            )
-            out_str = out.stdout.decode()
+            out_str = execute_code("sh", content_assistant)
             meeseeks.tell("output was:" + out_str, role="system")
             action = "ACTION"
 
