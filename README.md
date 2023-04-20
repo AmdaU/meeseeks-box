@@ -15,7 +15,7 @@ requires the [`glow`](https://github.com/charmbracelet/glow) program for printin
 
 
 # Todo:
-- [ ] Command help
+- [x] Command help
 - [ ] multi-meeseeks conversation
 - [x] Terminal feedback
 - [ ] Add hyperlinks to run command ?

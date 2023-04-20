@@ -6,6 +6,9 @@ import custom_logging as log
 from tiktoken import get_encoding
 from fancy_print import fancy_print
 from config import script_dir
+from os import system
+
+clear = lambda: system("clear")
 
 
 def token_count(string: str, model: str):
@@ -39,12 +42,26 @@ def code(markdown_string: str) -> tuple[str, list[tuple]]:
     return new_text, [match.groups()[1:] for match in matches]
 
 
-def command(command: str, meeseeks=None, code_blocks=None) -> None:
-    """Parses user commands"""
+def command(command_str: str, meeseeks=None, code_blocks=None) -> None:
+    """
+    User commands can be entered by using `/command [args]` syntax.
+    arguments marked with `?` are optional
+
+    The avalible commands are
+    exit:                   ends the script
+    save:                   saves the current discussion to `archive/`
+    remember [?subject]:    Make the meeseeks take a note
+    set [variable] [value]: set a proprity of current meesseks (like `temp`)
+    get [variable]:         get a proprity of current meesseks (like `temp`)
+    exec [cell number]:     execute code cell
+    reply:                  force the meeseeks to reply now
+    clear:                  clears the screen
+    help (same as ?):       print this message
+    """
     # raw string (with /) should be passed
-    if not command[0] == "/":
+    if not command_str[0] == "/":
         raise (Exception("This function should not have been called..."))
-    command_args = command[1:].split(" ")
+    command_args = command_str[1:].split(" ")
     command_name = command_args.pop(0)
 
     # most commands (even if not all) require a that a meeseeks was passed
@@ -79,11 +96,15 @@ def command(command: str, meeseeks=None, code_blocks=None) -> None:
             msg = meeseeks.reply()
             if not meeseeks.live:
                 fancy_print(msg)
+        case "clear":
+            clear()
+        case "help" | "?":
+            print(command.__doc__)
         case _:
             log.system("this command doesn't exist")
 
 
-def terminal_output(out: CompletedProcess, model: str, keep_lines: int=10):
+def terminal_output(out: CompletedProcess, model: str, keep_lines: int = 10):
     str_out = out.stdout.decode("utf-8")
     if token_count(str_out, model):
         log.system(

@@ -64,6 +64,8 @@ arg_parser.add_argument(
 
 args = arg_parser.parse_args()
 
+
+log.system("tip: use /help or /? to get information on avalible commands")
 if args.live:
     log.system("Live feature is expiremental, expect buginess")
 if args.action:
