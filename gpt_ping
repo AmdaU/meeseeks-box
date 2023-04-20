@@ -123,7 +123,8 @@ while True:
         case "COMMAND":
             failure_counter = 0
             log.system(f"Running command `{content_assistant}`")
-            out_str = execute_code("sh", content_assistant)
+            out = execute_code("sh", content_assistant, std_out=True)
+            out_str = parser.terminal_output(out, meeseeks.model)
             meeseeks.tell("output was:" + out_str, role="system")
             action = "ACTION"
 

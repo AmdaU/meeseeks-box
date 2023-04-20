@@ -72,19 +72,20 @@ class Meeseeks:
 
         if self.live:
             content_assistant = ""  # the return message
+            content_parsed = ""
             # loops over the stream in real time as the chunks comme in
             for chunk in response:
                 content_assistant += chunk
+                content_parsed += chunk
                 # extract the current action from the text
                 if looking_for_action:
-                    content, action = parser.action(content_assistant)
+                    content_parsed, action = parser.action(content_assistant)
                     if (action is not None) or (len(content_assistant) > 10):
                         log.system(f"action is {action}")
                         looking_for_action = False
-                        content_assistant = content
 
                 if keep_reply and action is None and not looking_for_action:
-                    print_stream(content_assistant)  # Print content as it come
+                    print_stream(content_parsed)  # Print content as it come
 
         else:
             content_assistant = response
@@ -94,7 +95,7 @@ class Meeseeks:
             message = {"role": "assistant", "content": content_assistant}
             self.discussion.append(message)
 
-        return content_assistant, action
+        return content_parsed, action
 
     def tell(self, message: str, role: str = "user"):
         """adds a message to the meeseeks mid-term memory"""
@@ -224,6 +225,7 @@ class gpt35(Meeseeks):
             temp, length, timeout, preset, discussion, live
         )  # inherits from Meeseeks init
 
+        self.model = "gpt-3.5-turbo"
         # Loads open ai api key
         if api_key is None:
             from config import open_ai_key as api_key
@@ -254,6 +256,7 @@ class gpt35(Meeseeks):
             stream=self.live,
         )
         if self.live:
+
             def response_content():
                 for chunk in response:
                     yield chunk["choices"][0]["delta"].get("content", "")
