@@ -1,11 +1,15 @@
 # Meeseeks Box:
 An interface allowing you to communicate with different large languages models (only chat-gpt supported currently) easily and allowing them to communicate with one another.
 
-The `gpt_ping`
-
 To interact with chat-gtp in the usual chat mode (plus some local commands) run 
 
-`gpt-ping -h`
+`gpt-ping`
+
+## Requirements
+
+Currently only works on linux (and possible MacOS)
+
+requires the [`glow`](https://github.com/charmbracelet/glow) program for printing 
 
 # Todo:
 - [ ] Command help

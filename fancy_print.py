@@ -6,6 +6,8 @@ import parser
 script_dir = os.path.dirname(os.path.realpath(__file__))
 style_file = "ressources/style.json"
 
+
+# print the output so that it is  ✨ p r e t t y ✨
 def fancy_print(content):
     global terminal_height, terminal_width
     fancy_out = subprocess.run(

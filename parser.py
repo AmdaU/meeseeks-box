@@ -1,11 +1,16 @@
 import re
-import subprocess
+from subprocess import run, CompletedProcess
 import sys
 from code import execute_code
-import os
 import custom_logging as log
+from tiktoken import get_encoding
+from fancy_print import fancy_print
+from config import script_dir
 
-script_dir = os.path.dirname(os.path.realpath(__file__))
+
+def token_count(string: str, model: str):
+    encoding = get_encoding(model)
+    return len(encoding.encode(string))
 
 
 def code(markdown_string: str) -> tuple[str, list[tuple]]:
@@ -65,29 +70,27 @@ def command(command: str, meeseeks=None, code_blocks=None) -> None:
                 attr = getattr(meeseeks, command_args[0])
                 print(attr)
         case "exec":
-            out_str = execute_code(*code_blocks[int(command_args[0])], std_out=False)
+            out_str = execute_code(
+                *code_blocks[int(command_args[0])], std_out=False
+            )
             print(out_str)
             meeseeks.tell(out_str, role="system")
         case "reply":
             msg = meeseeks.reply()
             if not meeseeks.live:
-                subprocess.run(
-                    [f"glow -s '{script_dir}/ressources/style.json'"],
-                    shell=True,
-                    input=msg.encode("utf-8"),
-                )
+                fancy_print(msg)
         case _:
             log.system("this command doesn't exist")
 
 
-def terminal_output(out: subprocess.CompletedProcess):
+def terminal_output(out: CompletedProcess, model: str, keep_lines: int=10):
     str_out = out.stdout.decode("utf-8")
-    lines = str_out.split("\n")
-    lines_num = len(lines)
-
-    if lines_num > 10:
-        log.system("too many lines")
-        sys.exit(1)
+    if token_count(str_out, model):
+        log.system(
+            f"terminal output too long, outputing last {keep_lines} lines"
+        )
+    new_out = run("tail -n", stdin=out, shell=True)
+    return new_out.stdout.decode("utf-8")
 
 
 def action(gtp_reply: str) -> tuple[str, str]:

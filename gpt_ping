@@ -8,6 +8,7 @@ import parser
 import backends
 import custom_logging as log
 from config import script_dir
+from fancy_print import fancy_print
 
 
 # Get the path to the directory were this file is located
@@ -53,8 +54,8 @@ arg_parser.add_argument(
     "-m", "--message", help="override preset and send message", type=str
 )
 arg_parser.add_argument(
-    "--terminal",
-    help="terminal acces",
+    "--action",
+    help="action mode",
     default=False,
     action="store_true",
 )
@@ -117,14 +118,8 @@ while True:
             failure_counter = 0
             content_assistant, code_blocks = parser.code(content_assistant)
 
-            # print the output so that it is  ✨ p r e t t y ✨
-            # if not meeseeks.live:
-            # subprocess.run(
-            # [f"glow -s '{script_dir}/ressources/style.json'"],
-            # shell=True,
-            # input=content_assistant.encode("utf-8"),
-            # )
-            # print("")
+            if not meeseeks.live:
+                fancy_print(content_assistant)
             action = "USER"
 
         case "LIST":

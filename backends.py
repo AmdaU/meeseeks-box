@@ -67,7 +67,6 @@ class Meeseeks:
         if self.live and keep_reply:
             init_print()  # sets text width and rests last_line_num
 
-
         response = self.get_response(live=self.live, discussion=discussion)
 
         if self.live:
@@ -85,6 +84,9 @@ class Meeseeks:
 
                 if keep_reply and action is None and not looking_for_action:
                     print_stream(content_assistant)  # Print content as it come
+
+        else:
+            content_assistant = response
 
         # adds the reply to the discussion
         if keep_reply:
@@ -178,7 +180,7 @@ class Meeseeks:
             "information does **not** need to be clear to a human,"
             f"**only** to you. The subject of your note is: {specific}",
         }
-        note = self.reply(message)
+        note, _ = self.reply(message)
         self.notes.append(note)
         log.system(f"{self.name} has taken note of {specific}\nNote: {note}")
 
@@ -196,7 +198,7 @@ class Meeseeks:
             "Do not give **any** formating like 'Title:' or similar."
             "Do not end with a dot.",
         }
-        title = self.reply(message)
+        title, _ = self.reply(message)
 
         self.temp = old_temp  # resets the temperature
         return title
@@ -243,19 +245,30 @@ class gpt35(Meeseeks):
         # sends the rely request using the openai package
         openai.api_key = self.api_key
 
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=discussion,
-            temperature=self.temp,
-            max_tokens=self.length,
-            stream=True,  # This allows live mode and is slightly faster
-        )
+        if self.live:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=discussion,
+                temperature=self.temp,
+                max_tokens=self.length,
+                stream=True,  # This allows live mode and is slightly faster
+            )
 
-        def response_content():
-            for chunk in response:
-                yield chunk["choices"][0]["delta"].get("content", "")
+            def response_content():
+                for chunk in response:
+                    yield chunk["choices"][0]["delta"].get("content", "")
 
-        return response_content()
+            return response_content()
+
+        else:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=discussion,
+                temperature=self.temp,
+                max_tokens=self.length,
+            )
+
+            return response["choices"][0]["message"]["content"]
 
 
 class llama(Meeseeks):
