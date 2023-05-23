@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env /home/amda/Documents/Projects/meeseeks-box/.venv/bin/python
 from prompt_toolkit import prompt
 from prompt_toolkit.history import FileHistory
 from argparse import ArgumentParser

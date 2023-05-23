@@ -22,7 +22,6 @@ _ = logger.add(
 )
 
 # more "intuitive" fucntion to call the logger
-
 log_types = ["system", "danger", "error"]
 
 for log_type in log_types:

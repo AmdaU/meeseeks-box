@@ -27,6 +27,10 @@ requires the [`glow`](https://github.com/charmbracelet/glow) program for printin
 - [ ] Add other llm
 - [ ] find a way to display images
 - [ ] Make fancy printing optional
+- [ ] Add a reset command 
+- [ ] Active local environment automatically 
+- [ ] open in markdown editor
+- [ ] add command to copy code block
 
 - Live mode:
 	- [x] make live less bugy
