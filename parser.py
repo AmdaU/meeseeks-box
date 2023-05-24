@@ -7,6 +7,7 @@ from tiktoken import encoding_for_model
 from fancy_print import fancy_print
 from config import script_dir
 from os import system
+import os
 
 clear = lambda: system("clear")
 
@@ -56,6 +57,7 @@ def command(command_str: str, meeseeks=None, code_blocks=None) -> None:
     exec [cell number]:     execute code cell
     reply:                  force the meeseeks to reply now
     clear:                  clears the screen
+    md:                     opens the current discussion in markdown file
     help (same as ?):       print this message
     """
     # raw string (with /) should be passed
@@ -98,6 +100,15 @@ def command(command_str: str, meeseeks=None, code_blocks=None) -> None:
                 fancy_print(msg)
         case "clear":
             clear()
+        case "md":
+            md_string = ""
+            for message in meeseeks.discussion:
+                md_string += f"**{message['role']}**:\t{message['content']}\n\n"
+            if not os.path.exists(f"{script_dir}/temp"):
+                os.makedirs(f"{script_dir}/temp")
+            with open(f"{script_dir}/temp/markdown.md", "w+") as file:
+                file.write(md_string)
+            execute_code('sh', f"xdg-open {script_dir}/temp/markdown.md"  )
         case "help" | "?":
             print(command.__doc__)
         case _:
