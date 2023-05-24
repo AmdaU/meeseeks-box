@@ -29,7 +29,7 @@ requires the [`glow`](https://github.com/charmbracelet/glow) program for printin
 - [ ] Make fancy printing optional
 - [ ] Add a reset command 
 - [ ] Active local environment automatically 
-- [ ] open in markdown editor
+- [x] open in markdown editor
 - [ ] add command to copy code block
 
 - Live mode:
