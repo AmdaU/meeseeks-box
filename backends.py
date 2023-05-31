@@ -45,7 +45,7 @@ class Meeseeks:
         action_mode: bool = False,
     ) -> tuple[str, str | None]:
         """
-        This method is the most important for a meeseeks as it it the one
+        This method is the most important for a meeseeks as it is the one
         who actually request a reply from the llm. The specific details for
         requesting a reply are in `self.get_response`. Outputs the (reply, action)
         """

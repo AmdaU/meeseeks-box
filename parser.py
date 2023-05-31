@@ -58,6 +58,7 @@ def command(command_str: str, meeseeks=None, code_blocks=None) -> None:
     reply:                  force the meeseeks to reply now
     clear:                  clears the screen
     md:                     opens the current discussion in markdown file
+    reset:                  resets the conversation
     help (same as ?):       print this message
     """
     # raw string (with /) should be passed
@@ -89,9 +90,12 @@ def command(command_str: str, meeseeks=None, code_blocks=None) -> None:
                 attr = getattr(meeseeks, command_args[0])
                 print(attr)
         case "exec":
+            cell_number=int(command_args[0])
+            log.system(f"Executing code cell {cell_number}")
             out_str = execute_code(
-                *code_blocks[int(command_args[0])], std_out=False
+                *code_blocks[cell_number], std_out=False
             )
+            log.system("ouput was:")
             print(out_str)
             meeseeks.tell(out_str, role="system")
         case "reply":
@@ -100,14 +104,19 @@ def command(command_str: str, meeseeks=None, code_blocks=None) -> None:
                 fancy_print(msg)
         case "clear":
             clear()
+        case "reset":
+            if ensure_meeseeks(command_name):
+                meeseeks.discussion = [meeseeks.discussion[0]]
+            log.system("discussion is set back to the orginal prompt")
         case "md":
             md_string = ""
             for message in meeseeks.discussion:
-                md_string += f"**{message['role']}**:\t{message['content']}\n\n"
+                md_string += f"**{message['role']}**:\n{message['content']}\n\n"
             if not os.path.exists(f"{script_dir}/temp"):
                 os.makedirs(f"{script_dir}/temp")
             with open(f"{script_dir}/temp/markdown.md", "w+") as file:
                 file.write(md_string)
+            log.system("Oppend current discussion in default markdown editor.\n Waiting for the window to be closed to resume...")
             execute_code('sh', f"xdg-open {script_dir}/temp/markdown.md"  )
         case "help" | "?":
             print(command.__doc__)

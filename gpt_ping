@@ -65,12 +65,12 @@ arg_parser.add_argument(
 args = arg_parser.parse_args()
 
 
-log.system("tip: use /help or /? to get information on avalible commands")
+log.system("tip: use /help or /? to get information on available commands")
 if args.live:
-    log.system("Live feature is expiremental, expect buginess")
+    log.system("Live feature is experimental, expect buginess")
 if args.action:
     log.danger(
-        "Terminal acces is still expirimental, giving acces to your terminal to chat gpt might be very dangerous!"
+        "Terminal acces is still experimental, giving acces to your terminal to chat gpt might be very dangerous!"
     )
 
 live = args.live
