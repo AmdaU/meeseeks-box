@@ -1,5 +1,5 @@
 # Meeseeks Box:
-An interface allowing you to communicate with different large languages models (only chat-gpt supported currently) easily and allowing them to communicate with one another.
+zAn interface allowing you to communicate with different large languages models (only chat-gpt supported currently) easily and allowing them to communicate with one another.
 
 To interact with chat-gtp in the usual chat mode (plus some local commands) run 
 
@@ -11,7 +11,25 @@ To interact with chat-gtp in the usual chat mode (plus some local commands) run
 
 Currently only works on Linux and MacOs 
 
-requires the [`glow`](https://github.com/charmbracelet/glow) program for printing 
+Requires the [`glow`](https://github.com/charmbracelet/glow) program for printing 
+
+## Installation
+
+Start by cloning this repo
+
+```
+git clone https://github.com/AmdaUwU/meeseeks-box
+cd messeeks-box
+```
+You can then create the virtual environment 
+
+(with poetry)
+```
+poetry install
+```
+(poetry should be configured to create environnement locally)
+
+
 
 # Todo:
 - [x] Command help
