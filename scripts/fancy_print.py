@@ -52,7 +52,7 @@ def init_print():
 def get_terminal_dimentions():
     os = platform.system()
     match os:
-        case "Linux":  # Probably works on macos as well but needs testing
+        case "Linux" | "Darwin":
             out_stty = subprocess.run(
                 ["stty size"], shell=True, capture_output=True
             )

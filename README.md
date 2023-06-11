@@ -9,10 +9,9 @@ To interact with chat-gtp in the usual chat mode (plus some local commands) run
 
 ## Requirements
 
-Currently only works on linux (and possible MacOS)
+Currently only works on Linux and MacOs 
 
 requires the [`glow`](https://github.com/charmbracelet/glow) program for printing 
-
 
 # Todo:
 - [x] Command help
@@ -27,10 +26,16 @@ requires the [`glow`](https://github.com/charmbracelet/glow) program for printin
 - [ ] Add other llm
 - [ ] find a way to display images
 - [ ] Make fancy printing optional
-- [ ] Add a reset command 
-- [ ] Active local environment automatically 
+- [x] Add a reset command 
+- [x] Active local environment automatically 
 - [x] open in markdown editor
 - [ ] add command to copy code block
+- [ ] Add install script and install instruction
+- [x] Fix bugs on Mac
+
+- Action mode:
+    - [ ] Fix bug with no `--live` flag
+    - [ ] rework
 
 - Live mode:
 	- [x] make live less bugy

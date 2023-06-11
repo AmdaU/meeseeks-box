@@ -4,9 +4,9 @@ from config import *
 def execute_code(language, code, std_out=False):
     out = None
     match language:
-        case "py" | "python":
+        case "py" | "python" | "python3":
             out = run(
-                [language],
+                ["python3"],
                 shell=True,
                 input=code.encode("utf-8"),
                 capture_output=True,

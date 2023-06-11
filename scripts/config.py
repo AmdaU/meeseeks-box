@@ -1,7 +1,7 @@
 import os
 from json import load
 
-script_dir = os.path.dirname(os.path.realpath(__file__))
+script_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 presets = {}
 with open(f"{script_dir}/ressources/presets.json") as read:
