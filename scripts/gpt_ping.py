@@ -87,55 +87,76 @@ action = "USER"
 failure_counter = 0
 
 # Main discussion loop --------------------------------------------------------
-while True:
-    match action:
-        case "USER":
-            failure_counter = 0
-            if (
-                content_user := prompt(
-                    "> ", history=history, multiline=args.multiline
-                )
-            )[0] == "/":
-                parser.command(
-                    content_user, meeseeks=meeseeks, code_blocks=code_blocks
-                )
+
+if args.action:
+    while True:
+        match action:
+            case "USER":
+                failure_counter = 0
+                if (
+                    content_user := prompt(
+                        "> ", history=history, multiline=args.multiline
+                    )
+                )[0] == "/":
+                    parser.command(
+                        content_user, meeseeks=meeseeks, code_blocks=code_blocks
+                    )
+                    continue
+                meeseeks.tell(content_user)
+                action = "ACTION"
                 continue
-            meeseeks.tell(content_user)
-            action = "ACTION"
+
+            case "ACTION":
+                content_assistant, action = meeseeks.reply(action_mode=args.action)
+
+            case None:
+                failure_counter = 0
+                content_assistant, code_blocks = parser.code(content_assistant)
+
+                if not meeseeks.live:
+                    fancy_print(content_assistant)
+                action = "USER"
+
+            case "LIST":
+                print(content_assistant)
+                meeseeks.tell("You shall now do the first point", role="system")
+
+            case "COMMAND":
+                failure_counter = 0
+                log.system(f"Running command `{content_assistant}`")
+                out = execute_code("sh", content_assistant, std_out=True)
+                out_str = parser.terminal_output(out, meeseeks.model)
+                meeseeks.tell("output was:" + out_str, role="system")
+                action = "ACTION"
+
+            case _:
+                meeseeks.tell(
+                    "You did not pick a valid action. You must **ALWAYS** reply in the form `ACTION:content` by picking from one the following actions; COMMAND, USER",
+                    role="system",
+                )
+                log.system(f"Internal error, retring, (action = {action})")
+                log.system(f"assitant tried to say: '{content_assistant}'")
+                failure_counter += 1
+                if failure_counter > 2:
+                    action = "USER"
+                    continue
+                action = "ACTION"
+
+else:
+    while True:
+        content_user = prompt("> ", 
+                               history=history,
+                               multiline=args.multiline)
+        if content_user[0] == "/":
+            parser.command(content_user, meeseeks=meeseeks,
+                           code_blocks=code_blocks)
             continue
 
-        case "ACTION":
-            content_assistant, action = meeseeks.reply(action_mode=args.action)
+        meeseeks.tell(content_user)
 
-        case None:
-            failure_counter = 0
-            content_assistant, code_blocks = parser.code(content_assistant)
+        content_assistant, action = meeseeks.reply(action_mode=args.action)
+        content_assistant, code_blocks = parser.code(content_assistant)
 
-            if not meeseeks.live:
-                fancy_print(content_assistant)
-            action = "USER"
+        if not meeseeks.live:
+            print(fancy_print(content_assistant))
 
-        case "LIST":
-            print(content_assistant)
-            meeseeks.tell("You shall now do the first point", role="system")
-
-        case "COMMAND":
-            failure_counter = 0
-            log.system(f"Running command `{content_assistant}`")
-            out = execute_code("sh", content_assistant, std_out=True)
-            out_str = parser.terminal_output(out, meeseeks.model)
-            meeseeks.tell("output was:" + out_str, role="system")
-            action = "ACTION"
-
-        case _:
-            meeseeks.tell(
-                "You did not pick a valid action. You must **ALWAYS** reply in the form `ACTION:content` by picking from one the following actions; COMMAND, USER",
-                role="system",
-            )
-            log.system(f"Internal error, retring, (action = {action})")
-            log.system(f"assitant tried to say: '{content_assistant}'")
-            failure_counter += 1
-            if failure_counter > 2:
-                action = "USER"
-                continue
-            action = "ACTION"

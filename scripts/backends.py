@@ -65,7 +65,7 @@ class Meeseeks:
         if keep_reply is None:
             keep_reply = not message
 
-        if self.live and keep_reply:
+        if keep_reply:
             init_print()  # sets text width and rests last_line_num
 
         response = self.get_response(live=self.live, discussion=discussion)
@@ -89,6 +89,7 @@ class Meeseeks:
 
         else:
             content_assistant = response
+            content_parsed = content_assistant
 
         # adds the reply to the discussion
         if keep_reply:
