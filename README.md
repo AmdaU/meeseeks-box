@@ -52,7 +52,7 @@ poetry install
 - [x] Fix bugs on Mac
 
 - Action mode:
-    - [ ] Fix bug with no `--live` flag
+    - [x] Fix bug with no `--live` flag
     - [ ] rework
 
 - Live mode:
