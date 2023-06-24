@@ -74,6 +74,14 @@ if args.action:
 
 live = args.live
 
+def test(test_sentence:str):
+    "this function runs tests!"
+    print(f"THIS IS A TEST: {test_sentence}")
+
+functions = [test]
+
+
+
 # initiate meeseeks instance
 meeseeks = gpt35(
     preset=args.preset,
@@ -81,6 +89,7 @@ meeseeks = gpt35(
     length=args.response_length,
     temp=args.temperature,
     live=live,
+    functions=functions
 )
 code_blocks = None
 action = "USER"
@@ -144,9 +153,10 @@ if args.action:
 
 else:
     while True:
-        content_user = prompt("> ", 
+        content_user = prompt("> ",
                                history=history,
-                               multiline=args.multiline)
+                               multiline=args.multiline
+                               )
         if content_user[0] == "/":
             parser.command(content_user, meeseeks=meeseeks,
                            code_blocks=code_blocks)

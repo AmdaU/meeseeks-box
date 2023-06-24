@@ -8,6 +8,7 @@ from fancy_print import fancy_print
 from config import script_dir
 from os import system
 import os
+from inspect import signature, Parameter
 
 clear = lambda: system("clear")
 
@@ -141,3 +142,20 @@ def action(gtp_reply: str) -> tuple[str, str]:
     match = re.search(action_pattern, gtp_reply)
     new_text = re.sub(action_pattern, "", gtp_reply)
     return new_text, match.groups()[0] if match else None
+
+
+def function_to_gpt_json(function):
+    translator = {'str':"string"}
+    parameters = signature(function).parameters
+    parameters_dict =  {param[0]:{"type":translator[param[1]._annotation.__name__]} for param in parameters.items()}
+    required_parameters = [name for name, param in parameters.items() if param.default == Parameter.empty]
+    return {
+        "name": function.__name__,
+        "description": function.__doc__,
+        "parameters": {
+            "type": "object",
+            "properties": parameters_dict,
+            "required": required_parameters,
+        },
+    }
+

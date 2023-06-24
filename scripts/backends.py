@@ -221,6 +221,7 @@ class gpt35(Meeseeks):
         preset: str = "default",
         discussion: list = None,
         live: bool = False,
+        functions = None
     ):
         super(gpt35, self).__init__(
             temp, length, timeout, preset, discussion, live
@@ -244,28 +245,38 @@ class gpt35(Meeseeks):
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key}",
         }
+        self.functions_json = list(map(parser.function_to_gpt_json, functions))
+        self.functions = functions
 
     def get_response(self, live: bool, discussion: list) -> str | Generator:
         # sends the rely request using the openai package
         openai.api_key = self.api_key
 
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-3.5-turbo-0613",
             messages=discussion,
             temperature=self.temp,
             max_tokens=self.length,
             stream=self.live,
+            functions=self.functions_json
         )
         if self.live:
 
             def response_content():
                 for chunk in response:
-                    yield chunk["choices"][0]["delta"].get("content", "")
+                    chunk_out = chunk["choices"][0]["delta"].get("content", "")
+                    if chunk_out is None:
+                        yield ''
+                    else:
+                        yield chunk_out
 
             return response_content()
 
         else:
-            return response["choices"][0]["message"]["content"]
+            message = response["choices"][0]["message"]
+            if message.get("function_call"):
+                return ("hooga booga")
+            return message["content"]
 
 
 class llama(Meeseeks):
