@@ -1,5 +1,5 @@
 # Meeseeks Box:
-zAn interface allowing you to communicate with different large languages models (only chat-gpt supported currently) easily and allowing them to communicate with one another.
+An interface allowing you to communicate with different large languages models (only chat-gpt supported currently) easily and allowing them to communicate with one another.
 
 To interact with chat-gtp in the usual chat mode (plus some local commands) run 
 
@@ -54,7 +54,7 @@ poetry install
 - Action mode:
     - [x] Fix bug with no `--live` flag
     - [ ] rework
-
+    - [ ] Use the new builtin function calling api thing instead of whatever jank i had before.
 - Live mode:
 	- [x] make live less bugy
 	- [x] implement code parsing
