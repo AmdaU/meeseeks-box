@@ -12,7 +12,6 @@ from config import script_dir
 from sys import exit
 from typing import Generator
 
-
 class Meeseeks:
     def __init__(
         self,
@@ -49,9 +48,6 @@ class Meeseeks:
         who actually request a reply from the llm. The specific details for
         requesting a reply are in `self.get_response`. Outputs the (reply, action)
         """
-        action = None
-        looking_for_action = action_mode
-
         # additional message will not be remembered in the meeseeks memory
         # if you want it to be remembered, use `.tell()` instead
         discussion = self.discussion.copy()
@@ -69,7 +65,6 @@ class Meeseeks:
             init_print()  # sets text width and rests last_line_num
 
         response = self.get_response(live=self.live, discussion=discussion)
-
         if self.live:
             content_assistant = ""  # the return message
             content_parsed = ""
@@ -78,25 +73,21 @@ class Meeseeks:
                 content_assistant += chunk
                 content_parsed += chunk
                 # extract the current action from the text
-                if looking_for_action:
-                    content_parsed, action = parser.action(content_assistant)
-                    if (action is not None) or (len(content_assistant) > 10):
-                        log.system(f"action is {action}")
-                        looking_for_action = False
 
-                if keep_reply and action is None and not looking_for_action:
+                if keep_reply and content_assistant:
                     print_stream(content_parsed)  # Print content as it come
 
         else:
             content_assistant = response
             content_parsed = content_assistant
 
+
         # adds the reply to the discussion
-        if keep_reply:
+        if keep_reply and content_assistant:
             message = {"role": "assistant", "content": content_assistant}
             self.discussion.append(message)
 
-        return content_parsed, action
+        return content_parsed
 
     def tell(self, message: str, role: str = "user"):
         """adds a message to the meeseeks mid-term memory"""
@@ -120,14 +111,7 @@ class Meeseeks:
         self.archive["discussion"] = self.discussion
         self.archive["notes"] = self.notes
         with open(self.archive_file, "w+") as file:
-            content = json.dumps(self.archive)
-            formated = subprocess.run(
-                ["jq"],
-                shell=True,
-                capture_output=True,
-                input=content.encode("utf-8"),
-            ).stdout.decode()
-            file.write(formated)
+            file.write(json.dumps(self.archive, indent=4))
 
     def create_new_Meeseeks(self):
         pass
@@ -183,7 +167,7 @@ class Meeseeks:
             "information does **not** need to be clear to a human,"
             f"**only** to you. The subject of your note is: {specific}",
         }
-        note, _ = self.reply(message)
+        note = self.reply(message)
         self.notes.append(note)
         log.system(f"{self.name} has taken note of {specific}\nNote: {note}")
 
@@ -201,7 +185,7 @@ class Meeseeks:
             "Do not give **any** formating like 'Title:' or similar."
             "Do not end with a dot.",
         }
-        title, _ = self.reply(message)
+        title = self.reply(message)
 
         self.temp = old_temp  # resets the temperature
         return title
@@ -246,7 +230,7 @@ class gpt35(Meeseeks):
             "Authorization": f"Bearer {self.api_key}",
         }
         self.functions_json = list(map(parser.function_to_gpt_json, functions))
-        self.functions = functions
+        self.functions = {func.__name__: func for func in functions}
 
     def get_response(self, live: bool, discussion: list) -> str | Generator:
         # sends the rely request using the openai package
@@ -263,19 +247,54 @@ class gpt35(Meeseeks):
         if self.live:
 
             def response_content():
+                function_name, function_args = '', ''
                 for chunk in response:
-                    chunk_out = chunk["choices"][0]["delta"].get("content", "")
-                    if chunk_out is None:
-                        yield ''
+                    content = chunk["choices"][0]["delta"]
+                    if content.get("function_call"):
+                        if content['function_call'].get('name'):
+                            function_name += content['function_call'].get('name')
+                        function_args += content['function_call']['arguments']
                     else:
+                        chunk_out = content.get("content", "")
                         yield chunk_out
+                if function_name != '':
+                    output = str(self.functions[function_name](**eval(function_args)))
+                    self.discussion.append(
+                        {
+                            "role": "assistant",
+                            "content": None,
+                            "function_call": {
+                                'name': function_name,
+                                'arguments': function_args
+                            }
+                        }
+                    )
+                    self.discussion.append(
+                        {
+                            "role": "function",
+                            "name": function_name,
+                            "content": output,
+                        })
+                    return None
 
             return response_content()
 
         else:
             message = response["choices"][0]["message"]
             if message.get("function_call"):
-                return ("hooga booga")
+                name, args = message['function_call'].values()
+                # print(f'calling {name} with argument {args}')
+                output = str(self.functions[name](**eval(args)))
+                message.content = None
+                message['function_call']= message['function_call'].to_dict()
+                self.discussion.append(message.to_dict())
+                self.discussion.append(
+                    {
+                        "role": "function",
+                        "name": name,
+                        "content": output,
+                    })
+                return None
             return message["content"]
 
 

@@ -7,7 +7,11 @@ from backends import gpt35
 import custom_logging as log
 from config import script_dir, presets
 from fancy_print import fancy_print
-
+from time import sleep
+from datetime import datetime
+from duckduckgo_search import DDGS
+import json
+from itertools import islice
 
 # Get the path to the directory were this file is located
 history = FileHistory(f"{script_dir}/log/history.txt")
@@ -77,8 +81,44 @@ live = args.live
 def test(test_sentence:str):
     "this function runs tests!"
     print(f"THIS IS A TEST: {test_sentence}")
+    return 'test succesfull'
 
-functions = [test]
+def wait(n:int):
+    "wait for n seconds"
+    sleep(n)
+    return 'wait over'
+
+def google_search(query:str, num_results:int=4):
+    """Return the results of a google search"""
+    log.system(f'searching for {query} ...')
+    search_results = []
+    results = DDGS().text(query)
+    for item in islice(results, num_results):
+        search_results.append(item)
+
+    return json.dumps(search_results, ensure_ascii=False, indent=4)
+
+# def time():
+    # "gets the current time"
+    # return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+def list_step(hello:list[str]):
+    "plan a list of action to do and goes through them one a time"
+    pass
+
+def shell_command(command:str):
+    "executes the given shell command in bash as is"
+    log.system(f'running `{command}` ...')
+    out = execute_code(
+        "bash", command, std_out=True
+    )
+    out_str = out.stdout.decode("utf-8")
+    err_str = out.stderr.decode("utf-8")
+    log.system(f'output was:\n{out_str}\n{err_str}')
+    return out_str + '\n' + err_str
+
+
+functions = [test, wait, shell_command, google_search, list_step]
 
 
 
@@ -92,81 +132,26 @@ meeseeks = gpt35(
     functions=functions
 )
 code_blocks = None
-action = "USER"
-failure_counter = 0
+
+content_assistant = 'dummy'
 
 # Main discussion loop --------------------------------------------------------
-
-if args.action:
-    while True:
-        match action:
-            case "USER":
-                failure_counter = 0
-                if (
-                    content_user := prompt(
-                        "> ", history=history, multiline=args.multiline
-                    )
-                )[0] == "/":
-                    parser.command(
-                        content_user, meeseeks=meeseeks, code_blocks=code_blocks
-                    )
-                    continue
-                meeseeks.tell(content_user)
-                action = "ACTION"
-                continue
-
-            case "ACTION":
-                content_assistant, action = meeseeks.reply(action_mode=args.action)
-
-            case None:
-                failure_counter = 0
-                content_assistant, code_blocks = parser.code(content_assistant)
-
-                if not meeseeks.live:
-                    fancy_print(content_assistant)
-                action = "USER"
-
-            case "LIST":
-                print(content_assistant)
-                meeseeks.tell("You shall now do the first point", role="system")
-
-            case "COMMAND":
-                failure_counter = 0
-                log.system(f"Running command `{content_assistant}`")
-                out = execute_code("sh", content_assistant, std_out=True)
-                out_str = parser.terminal_output(out, meeseeks.model)
-                meeseeks.tell("output was:" + out_str, role="system")
-                action = "ACTION"
-
-            case _:
-                meeseeks.tell(
-                    "You did not pick a valid action. You must **ALWAYS** reply in the form `ACTION:content` by picking from one the following actions; COMMAND, USER",
-                    role="system",
-                )
-                log.system(f"Internal error, retring, (action = {action})")
-                log.system(f"assitant tried to say: '{content_assistant}'")
-                failure_counter += 1
-                if failure_counter > 2:
-                    action = "USER"
-                    continue
-                action = "ACTION"
-
-else:
-    while True:
+while True:
+    if content_assistant:
         content_user = prompt("> ",
-                               history=history,
-                               multiline=args.multiline
-                               )
+                                history=history,
+                                multiline=args.multiline
+                                )
         if content_user[0] == "/":
             parser.command(content_user, meeseeks=meeseeks,
-                           code_blocks=code_blocks)
+                            code_blocks=code_blocks)
             continue
 
         meeseeks.tell(content_user)
 
-        content_assistant, action = meeseeks.reply(action_mode=args.action)
-        content_assistant, code_blocks = parser.code(content_assistant)
+    content_assistant = meeseeks.reply(action_mode=args.action)
 
-        if not meeseeks.live:
-            print(fancy_print(content_assistant))
+    if content_assistant and not meeseeks.live:
+        content_assistant, code_blocks = parser.code(content_assistant)
+        print(fancy_print(content_assistant))
 

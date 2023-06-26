@@ -9,6 +9,7 @@ from config import script_dir
 from os import system
 import os
 from inspect import signature, Parameter
+from collections.abc import Callable
 
 clear = lambda: system("clear")
 
@@ -101,8 +102,8 @@ def command(command_str: str, meeseeks=None, code_blocks=None) -> None:
             meeseeks.tell(out_str, role="system")
         case "reply":
             msg = meeseeks.reply()
-            if not meeseeks.live:
-                fancy_print(msg)
+            if not meeseeks.live and msg is not None:
+                print(fancy_print(msg))
         case "clear":
             clear()
         case "reset":
@@ -112,7 +113,11 @@ def command(command_str: str, meeseeks=None, code_blocks=None) -> None:
         case "md":
             md_string = ""
             for message in meeseeks.discussion:
-                md_string += f"**{message['role']}**:\n{message['content']}\n\n"
+                if message.get('content'):
+                    md_string += f"**{message['role']}**:\n{message['content']}\n\n"
+                elif message.get('function_call'):
+                    name, args = message['function_call'].values()
+                    md_string += f"`{name}({args})`\n\n"
             if not os.path.exists(f"{script_dir}/temp"):
                 os.makedirs(f"{script_dir}/temp")
             with open(f"{script_dir}/temp/markdown.md", "w+") as file:
@@ -144,10 +149,21 @@ def action(gtp_reply: str) -> tuple[str, str]:
     return new_text, match.groups()[0] if match else None
 
 
-def function_to_gpt_json(function):
-    translator = {'str':"string"}
+def function_to_gpt_json(function:Callable):
+    """
+    Takes in a python function and outputs a json that can be understood by chat gpt
+    """
+
+    # translate de python types to json
+    translator = {'str':"string", 'int':'integer', 'list':'array'}
+
     parameters = signature(function).parameters
-    parameters_dict =  {param[0]:{"type":translator[param[1]._annotation.__name__]} for param in parameters.items()}
+    parameters_dict = {}
+    for param in parameters.items():
+        name, var_type = param
+        parameters_dict[name] = {"type":translator[var_type._annotation.__name__]}
+        if hasattr(var_type.annotation, '__iter__') and not var_type.annotation is str:
+            parameters_dict[name]["items"] = {"type":translator[var_type.annotation.__args__[0].__name__]}
     required_parameters = [name for name, param in parameters.items() if param.default == Parameter.empty]
     return {
         "name": function.__name__,
