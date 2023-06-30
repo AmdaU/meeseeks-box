@@ -1,7 +1,7 @@
 import subprocess
 import platform
 import parser
-from config import script_dir
+from config import script_dir, enable_latex_to_png
 
 style_file = "ressources/style.json"
 
@@ -20,9 +20,7 @@ def fancy_print(content):
 
 
 def print_stream(content):
-    parsed_content, _ = parser.code(content)  # parse the whole code every time
-
-    fancy_string = fancy_print(parsed_content)
+    fancy_string = fancy_print(content)
 
     lines = fancy_string.split("\n")
     lines_num = len(lines)
@@ -93,3 +91,47 @@ def terminal_dims_windows():  # not tested yet
         return height, width
     else:
         print("Error getting console screen buffer info")
+
+def latex2png(latex:str):
+    import matplotlib.pyplot as plt
+    from PIL import Image, ImageChops
+    import numpy as np
+    plt.rc('text', usetex=True)
+    plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'+'\n'+r'\usepackage{physics}'
+
+    def trim(im, border):
+        bg = Image.new(im.mode, im.size, border)
+        diff = ImageChops.difference(im, bg)
+        bbox = diff.getbbox()
+        if bbox:
+            return im.crop(bbox)
+
+    # latex = r"$H = -t \sum_{\langle i,j \rangle, \sigma} (c_{i,\sigma}^\dagger c_{j,\sigma} + c_{j,\sigma}^\dagger c_{i,\sigma}) + U \sum_i n_{i,\uparrow} n_{i,\downarrow}$"
+
+    fig, ax = plt.subplots()
+    fig.set_size_inches(20, 3)
+    ax.annotate(latex, (0,0),  fontsize=20, ha='center', va='center', color='white')
+    ax.axis('off')
+    plt.autoscale('tight')
+    fig.patch.set_alpha(0)
+    ax.set_facecolor((0,0,0,0))
+
+
+    fig.canvas.draw()
+    rgba_buffer = np.array(fig.canvas.renderer.buffer_rgba())
+    pil_image = Image.fromarray(rgba_buffer)
+    cropped_image = trim(pil_image, '#00000000')
+
+    cropped_image.save(f'{script_dir}/temp/latex.png')
+
+def print_latex(latex:str):
+    if enable_latex_to_png:
+        latex2png(latex)
+        subprocess.run(f"kitty +kitten icat {script_dir}/temp/latex.png", shell=True)
+    else:
+        from pylatexenc.latex2text import LatexNodes2Text
+        print(LatexNodes2Text().latex_to_text(latex))
+
+
+
+

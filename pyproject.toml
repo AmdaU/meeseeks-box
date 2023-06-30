@@ -15,6 +15,9 @@ toml = "^0.10.2"
 prompt-toolkit = "^3.0.38"
 tiktoken = "^0.3.3"
 duckduckgo-search = "^3.8.3"
+mathjax = "^0.1.2"
+matplotlib = "^3.7.1"
+pylatexenc = "^2.10"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -6,7 +6,7 @@ import parser
 from backends import gpt35
 import custom_logging as log
 from config import script_dir, presets
-from fancy_print import fancy_print
+from fancy_print import fancy_print, print_latex
 from time import sleep
 from datetime import datetime
 from duckduckgo_search import DDGS
@@ -108,13 +108,13 @@ def list_step(hello:list[str]):
 
 def shell_command(command:str):
     "executes the given shell command in bash as is"
-    log.system(f'running `{command}` ...')
+    log.command(f'running `{command}` ...')
     out = execute_code(
         "bash", command, std_out=True
     )
     out_str = out.stdout.decode("utf-8")
     err_str = out.stderr.decode("utf-8")
-    log.system(f'output was:\n{out_str}\n{err_str}')
+    log.command(f'output was:\n{out_str}\n{err_str}')
     return out_str + '\n' + err_str
 
 
@@ -153,5 +153,11 @@ while True:
 
     if content_assistant and not meeseeks.live:
         content_assistant, code_blocks = parser.code(content_assistant)
-        print(fancy_print(content_assistant))
-
+        content_assistant, latex_blocks = parser.latex(content_assistant)
+        if latex_blocks:
+            for i, text_part in enumerate(content_assistant.split('latex_dummy')):
+                print(fancy_print(text_part))
+                if i < len(latex_blocks):
+                    print_latex(latex_blocks[i])
+        else:
+            print(fancy_print(content_assistant))

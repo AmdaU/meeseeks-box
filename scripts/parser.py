@@ -44,6 +44,46 @@ def code(markdown_string: str) -> tuple[str, list[tuple]]:
 
     return new_text, [match.groups()[1:] for match in matches]
 
+def latex(string: str) -> tuple[str, list[tuple]]:
+    """
+    Identifies latex equations.
+    Returns a modified version of the text where latex equations are replaced
+    by `latex_dummy` and a list of all the euqations in the format:
+    (language, code)
+    """
+    # regex pattern of a latex cell ($$*$$ or \[ \])
+    latex_block = r"..(?<=\$\$|\\\[).*?(?=\$\$|\\\]).."
+
+    matches = list(re.finditer(latex_block, string, re.DOTALL))
+
+    # if there is no code cell, return unmodified markdown
+    if len(matches) == 0:
+        return string, None
+
+    new_text = re.sub(latex_block, "latex_dummy", string, re.DOTALL)
+
+    return new_text, [match.group() for match in matches]
+
+def latex_minor(string: str) -> tuple[str, list[tuple]]:
+    """
+    Identifies latex equations that are whithin a line.
+    Returns a modified version of the text where latex equations are replaced
+    by `latex_dummy` and a list of all the euqations in the format:
+    (language, code)
+    """
+    # regex pattern of a latex cell ($$*$$ or \[ \])
+    latex_block = r"..(?<=\$\$|\\\[).*?(?=\$\$|\\\]).."
+
+    matches = list(re.finditer(latex_block, string, re.DOTALL))
+
+    # if there is no code cell, return unmodified markdown
+    if len(matches) == 0:
+        return string, None
+
+    new_text = re.sub(latex_block, "latex_dummy", string, re.DOTALL)
+
+    return new_text, [match.group() for match in matches]
+
 
 def command(command_str: str, meeseeks=None, code_blocks=None) -> None:
     """

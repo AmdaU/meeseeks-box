@@ -4,7 +4,7 @@ from datetime import datetime
 from functools import lru_cache
 import openai
 import parser
-from fancy_print import init_print, print_stream
+from fancy_print import init_print, print_stream, print_latex
 from collections import OrderedDict
 import custom_logging as log
 from code import execute_code
@@ -67,19 +67,25 @@ class Meeseeks:
         response = self.get_response(live=self.live, discussion=discussion)
         if self.live:
             content_assistant = ""  # the return message
-            content_parsed = ""
             # loops over the stream in real time as the chunks comme in
             for chunk in response:
                 content_assistant += chunk
-                content_parsed += chunk
-                # extract the current action from the text
+                parsed_content, _ = parser.code(content_assistant)  # parse the whole code every time
+                parsed_content, latex_groups = parser.latex(parsed_content)
+                if latex_groups:
+                    print_stream(parsed_content.split('latex_dummy')[0])
+                    print(f"\033[2K", end="\r")
+                    print_latex(latex_groups[0])
+                    init_print()
+                    content_assistant = ''
 
-                if keep_reply and content_assistant:
-                    print_stream(content_parsed)  # Print content as it come
+                elif keep_reply and content_assistant:
+                    pass
+                    print_stream(parsed_content)  # Print content as it come
 
         else:
             content_assistant = response
-            content_parsed = content_assistant
+            parsed_content = content_assistant
 
 
         # adds the reply to the discussion
@@ -87,7 +93,7 @@ class Meeseeks:
             message = {"role": "assistant", "content": content_assistant}
             self.discussion.append(message)
 
-        return content_parsed
+        return parsed_content
 
     def tell(self, message: str, role: str = "user"):
         """adds a message to the meeseeks mid-term memory"""
@@ -286,7 +292,7 @@ class gpt35(Meeseeks):
                 # print(f'calling {name} with argument {args}')
                 output = str(self.functions[name](**eval(args)))
                 message.content = None
-                message['function_call']= message['function_call'].to_dict()
+                message['function_call'] = message['function_call'].to_dict()
                 self.discussion.append(message.to_dict())
                 self.discussion.append(
                     {
