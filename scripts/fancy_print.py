@@ -1,10 +1,12 @@
 import subprocess
 import platform
-import parser
 from config import script_dir, enable_latex_to_png
+from colorama import Fore, Style
+from time import sleep
+from collections.abc import Callable
+import threading
 
 style_file = "ressources/style.json"
-
 
 # print the output so that it is  ✨ p r e t t y ✨
 def fancy_print(content):
@@ -92,12 +94,14 @@ def terminal_dims_windows():  # not tested yet
     else:
         print("Error getting console screen buffer info")
 
-def latex2png(latex:str):
+
+def latex2png(latex: str):
     import matplotlib.pyplot as plt
     from PIL import Image, ImageChops
     import numpy as np
     plt.rc('text', usetex=True)
-    plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'+'\n'+r'\usepackage{physics}'
+    plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}' +\
+                                        '\n'+r'\usepackage{physics}'
 
     def trim(im, border):
         bg = Image.new(im.mode, im.size, border)
@@ -106,16 +110,13 @@ def latex2png(latex:str):
         if bbox:
             return im.crop(bbox)
 
-    # latex = r"$H = -t \sum_{\langle i,j \rangle, \sigma} (c_{i,\sigma}^\dagger c_{j,\sigma} + c_{j,\sigma}^\dagger c_{i,\sigma}) + U \sum_i n_{i,\uparrow} n_{i,\downarrow}$"
-
     fig, ax = plt.subplots()
     fig.set_size_inches(20, 3)
-    ax.annotate(latex, (0,0),  fontsize=20, ha='center', va='center', color='white')
+    ax.annotate(latex, (0,0), fontsize=20, ha='center', va='center', color='w')
     ax.axis('off')
     plt.autoscale('tight')
-    fig.patch.set_alpha(0)
+    fig.patch.set_alpha(0)  
     ax.set_facecolor((0,0,0,0))
-
 
     fig.canvas.draw()
     rgba_buffer = np.array(fig.canvas.renderer.buffer_rgba())
@@ -125,6 +126,10 @@ def latex2png(latex:str):
     cropped_image.save(f'{script_dir}/temp/latex.png')
 
 def print_latex(latex:str):
+    """
+    Renders latex code. If `enable_latex_to_png` is enabled in parameters.dat
+    the code is rendered using latex and kitty icat if not it uses pylatexenc
+    """
     if enable_latex_to_png:
         latex2png(latex)
         subprocess.run(f"kitty +kitten icat {script_dir}/temp/latex.png", shell=True)
@@ -132,6 +137,34 @@ def print_latex(latex:str):
         from pylatexenc.latex2text import LatexNodes2Text
         print(LatexNodes2Text().latex_to_text(latex))
 
+def loading_animation(loading_text:str, task:Callable, args:dict,
+                      animation = "⣾⣽⣻⢿⡿⣟⣯⣷", color = Fore.BLUE):
+    """
+    Make a loading animation while `task` runs with `args` as arguments
+    """
+    # declare a wrapper function that stores the result of the function
+    result = []
+    def meta():
+        result.append(task(**args))
 
+    loading_text = loading_text.split('\n')[0]
 
+    # create the thead 
+    thread = threading.Thread(target=meta)
+    thread.start()
 
+    # Prints loading animation + loading_text until task is over
+    i = 0
+    while thread.is_alive():
+        print(f'\r{color}{animation[i % len(animation)]}'
+              f'{Style.RESET_ALL} ' + loading_text, end="")
+        sleep(0.1)
+        i+=1
+
+    #delete message when done
+    print(f"\033[2K", end="\r")
+
+    # just making sure
+    thread.join()
+
+    return result[0]

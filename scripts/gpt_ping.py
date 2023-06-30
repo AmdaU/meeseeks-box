@@ -6,12 +6,14 @@ import parser
 from backends import gpt35
 import custom_logging as log
 from config import script_dir, presets
-from fancy_print import fancy_print, print_latex
 from time import sleep
 from datetime import datetime
 from duckduckgo_search import DDGS
 import json
 from itertools import islice
+from fancy_print import loading_animation
+from colorama import Fore, Style
+
 
 # Get the path to the directory were this file is located
 history = FileHistory(f"{script_dir}/log/history.txt")
@@ -89,7 +91,7 @@ def wait(n:int):
     return 'wait over'
 
 def google_search(query:str, num_results:int=4):
-    """Return the results of a google search"""
+    """Return the results of a google search with their url"""
     log.system(f'searching for {query} ...')
     search_results = []
     results = DDGS().text(query)
@@ -98,29 +100,63 @@ def google_search(query:str, num_results:int=4):
 
     return json.dumps(search_results, ensure_ascii=False, indent=4)
 
-# def time():
-    # "gets the current time"
-    # return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+def read_web_page(url:str):
+    """returns the content of a webpage from a url"""
+    from bs4 import BeautifulSoup
+    import requests
 
-def list_step(hello:list[str]):
-    "plan a list of action to do and goes through them one a time"
-    pass
+    log.system(f'reading {url} ...')
+
+    # Make a request to the webpageurl
+    response = requests.get(url)
+
+    # Create a BeautifulSoup object
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Find all the text elements in the webpage
+    text_elements = soup.find_all(string=True)
+
+    # Filter out unwanted elements like scripts and styles
+    readable_text = [element.strip() for element in text_elements if element.parent.name in
+    (['div', 'p', ] + [f'h{n}' for n in range(1, 7)])]
+
+    # Join the text elements into a single string
+    readable_text = ' '.join(readable_text)
+
+    return readable_text
+
+def list_steps(steps: list[str]):
+    "Make a list of necessary step in order to run a complex task"
+    log.system(f"steps: {steps}")
 
 def shell_command(command:str):
     "executes the given shell command in bash as is"
-    log.command(f'running `{command}` ...')
-    out = execute_code(
-        "bash", command, std_out=True
-    )
+    # trims the command to a signle line since loading animation only suppots
+    # singles lines
+    command_lines = command.split('\n')
+    command_str= command_lines[0] + "..."*(len(command_lines) > 1)
+
+    # executes the command (with animation)
+    args = {"language": "bash", "code": command, "std_out": True}
+    out = loading_animation(f"running `{command_str}` ...", execute_code, args)
+
+    # confirms the command has been run
+    print(f'{Fore.GREEN}⣿{Style.RESET_ALL} ran `{command_str}`')
+
+    # returns sdtout and stderr to chatgpt
     out_str = out.stdout.decode("utf-8")
     err_str = out.stderr.decode("utf-8")
-    log.command(f'output was:\n{out_str}\n{err_str}')
-    return out_str + '\n' + err_str
+    if err_str == "" and out_str == "":
+        out = "Command was run succesfully!"
+    elif err_str == "" or out_str == "":
+        out = out_str + err_str
+    else:
+        out = out_str + '\n' + err_str
 
+    # log.command(f'output was:\n{out}')
+    return out
 
-functions = [test, wait, shell_command, google_search, list_step]
-
-
+functions = [test, wait, shell_command, google_search, list_steps, read_web_page]
 
 # initiate meeseeks instance
 meeseeks = gpt35(
@@ -151,13 +187,3 @@ while True:
 
     content_assistant = meeseeks.reply(action_mode=args.action)
 
-    if content_assistant and not meeseeks.live:
-        content_assistant, code_blocks = parser.code(content_assistant)
-        content_assistant, latex_blocks = parser.latex(content_assistant)
-        if latex_blocks:
-            for i, text_part in enumerate(content_assistant.split('latex_dummy')):
-                print(fancy_print(text_part))
-                if i < len(latex_blocks):
-                    print_latex(latex_blocks[i])
-        else:
-            print(fancy_print(content_assistant))

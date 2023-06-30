@@ -4,7 +4,7 @@ from datetime import datetime
 from functools import lru_cache
 import openai
 import parser
-from fancy_print import init_print, print_stream, print_latex
+from fancy_print import init_print, print_stream, print_latex, loading_animation, fancy_print
 from collections import OrderedDict
 import custom_logging as log
 from code import execute_code
@@ -64,6 +64,8 @@ class Meeseeks:
         if keep_reply:
             init_print()  # sets text width and rests last_line_num
 
+        content_assistant = None
+
         response = self.get_response(live=self.live, discussion=discussion)
         if self.live:
             content_assistant = ""  # the return message
@@ -86,6 +88,16 @@ class Meeseeks:
         else:
             content_assistant = response
             parsed_content = content_assistant
+            if content_assistant and keep_reply:
+                parsed_content, code_blocks = parser.code(parsed_content)
+                parsed_content, latex_blocks = parser.latex(parsed_content)
+                if latex_blocks:
+                    for i, text_part in enumerate(content_assistant.split('latex_dummy')):
+                        print(fancy_print(text_part))
+                        if i < len(latex_blocks):
+                            print_latex(latex_blocks[i])
+                else:
+                    print(fancy_print(parsed_content))
 
 
         # adds the reply to the discussion
@@ -241,15 +253,18 @@ class gpt35(Meeseeks):
     def get_response(self, live: bool, discussion: list) -> str | Generator:
         # sends the rely request using the openai package
         openai.api_key = self.api_key
+        args = {
+            "model": "gpt-3.5-turbo-0613",
+            "messages": discussion,
+            "temperature": self.temp,
+            "max_tokens": self.length,
+            "stream": self.live,
+            "functions": self.functions_json
+        }
+        # the function is called indrectly with a loading animation
+        response = loading_animation("Waiting for openai's response ...",
+                                     openai.ChatCompletion.create, args)
 
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo-0613",
-            messages=discussion,
-            temperature=self.temp,
-            max_tokens=self.length,
-            stream=self.live,
-            functions=self.functions_json
-        )
         if self.live:
 
             def response_content():
