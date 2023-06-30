@@ -3,9 +3,17 @@ An interface allowing you to communicate with different large languages models (
 
 To interact with chat-gtp in the usual chat mode (plus some local commands) run 
 
+
+### Examples
+
 `gpt-ping`
 
 ![demonstration of gpt-ping](ressources/images/gpt-ping_demo.gif)
+
+![demonstration of building an running a rust program](ressources/images/run_rust_exemple.gif)
+(sped up 300%)
+![ploting stock charts in seconds](ressources/images/plot_stonks.gif)
+
 
 ## Requirements
 
