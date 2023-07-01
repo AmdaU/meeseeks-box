@@ -22,27 +22,28 @@ To interact with chat-gtp in the usual chat mode (plus some local commands) run
 
 Currently only works on Linux and MacOs 
 
-Requires the [`glow`](https://github.com/charmbracelet/glow) program for printing 
+`phython >= 3.8`
+
+Requires the [`glow`](https://github.com/charmbracelet/glow) program for printing (to be made optional soon)
+
+
+
+###### (optional)
+`LaTeX` and `kitty` teminal are both required for the png redering of latex
+
 
 ## Installation
 
-Start by cloning this repo
+Clone this repo, cd into the directory and run the install script
 
 ```
 git clone https://github.com/AmdaUwU/meeseeks-box
 cd messeeks-box
+./install.sh
 ```
-You can then create the virtual environment 
-
-(with poetry)
-```
-poetry install
-```
-(poetry should be configured to create environnement locally)
 
 
 
-                    print(f"\033[K"*2)
 # Todo:
 - [x] Command help
 - [ ] multi-meeseeks conversation
@@ -60,7 +61,7 @@ poetry install
 - [x] Active local environment automatically 
 - [x] open in markdown editor
 - [ ] add command to copy code block
-- [ ] Add install script and install instruction
+- [x] Add install script and install instruction
 - [x] Fix bugs on Mac
 
 - Action mode:
