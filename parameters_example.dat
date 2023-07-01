@@ -1,2 +1,2 @@
 open_ai_key="<your-open-ai-api-key->"
-latex_to_png=False
+enable_latex_to_png=False

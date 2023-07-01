@@ -6,7 +6,7 @@ authors = ["AmdaUwU <jbat2000@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.8"
 numpy = "^1.24.2"
 requests = "^2.28.2"
 openai = "^0.27.4"
@@ -15,7 +15,7 @@ toml = "^0.10.2"
 prompt-toolkit = "^3.0.38"
 tiktoken = "^0.3.3"
 duckduckgo-search = "^3.8.3"
-matplotlib = "^3.7.1"
+matplotlib = "^3.5"
 pylatexenc = "^2.10"
 colorama = "^0.4.6"
 bs4 = "^0.0.1"
