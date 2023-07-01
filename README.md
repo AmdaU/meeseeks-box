@@ -9,10 +9,13 @@ To interact with chat-gtp in the usual chat mode (plus some local commands) run
 `gpt-ping`
 
 ![demonstration of gpt-ping](ressources/images/gpt-ping_demo.gif)
-
+##### Finding prime numbers with rust:
 ![demonstration of building an running a rust program](ressources/images/run_rust_exemple.gif)
 (sped up 300%)
+##### Ploting graphs with python:
 ![ploting stock charts in seconds](ressources/images/plot_stonks.gif)
+##### Latex rendring capabilities:
+![latex_rendering](ressources/images/latex_rendering.gif)
 
 
 ## Requirements
@@ -39,6 +42,7 @@ poetry install
 
 
 
+                    print(f"\033[K"*2)
 # Todo:
 - [x] Command help
 - [ ] multi-meeseeks conversation
