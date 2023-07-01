@@ -76,7 +76,8 @@ class Meeseeks:
                 parsed_content, latex_groups = parser.latex(parsed_content)
                 if latex_groups:
                     print_stream(parsed_content.split('latex_dummy')[0])
-                    print(f"\033[2K", end="\r")
+                    print(f"\033[F"*2)
+                    print(f"\033[K"*2)
                     print_latex(latex_groups[0])
                     init_print()
                     content_assistant = ''

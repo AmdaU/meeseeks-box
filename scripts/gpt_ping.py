@@ -156,7 +156,7 @@ def shell_command(command:str):
     # log.command(f'output was:\n{out}')
     return out
 
-functions = [test, wait, shell_command, google_search, list_steps, read_web_page]
+functions = [test, wait, shell_command, google_search, read_web_page]
 
 # initiate meeseeks instance
 meeseeks = gpt35(
