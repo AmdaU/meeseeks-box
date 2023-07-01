@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-cp parameters_example.dat parameters
+cp parameters_example.dat parameters.dat
 
 python3 -m venv .venv
 source .venv/bin/activate
