@@ -2,6 +2,12 @@ from loguru import logger
 from sys import stderr
 
 logger.remove()
+logger.level("hint", no=5, color="<yellow>")
+_ = logger.add(
+    stderr,
+    format="<b><yellow>{level}</yellow></b>: {message}",
+    filter=lambda record: record["level"].name == "hint",
+)
 logger.level("system", no=38, color="<yellow>")
 _ = logger.add(
     stderr,
@@ -14,13 +20,13 @@ _ = logger.add(
     format="<b><green>{level}</green></b>: {message}",
     filter=lambda record: record["level"].name == "command",
 )
-logger.level("danger", no=1, color="<red>")
+logger.level("danger", no=99, color="<red>")
 _ = logger.add(
     stderr,
     format="<b><red>DANGER</red></b>: {message}",
     filter=lambda record: record["level"].name == "danger",
 )
-logger.level("error", no=2, color="<red>")
+logger.level("error", no=100, color="<red>")
 _ = logger.add(
     stderr,
     format="<b><red>ERROR</red></b>: {message}",
@@ -28,7 +34,7 @@ _ = logger.add(
 )
 
 # more "intuitive" fucntion to call the logger
-log_types = ["system", "danger", "error", "command"]
+log_types = ["system", "danger", "error", "command", "hint"]
 
 for log_type in log_types:
     exec(

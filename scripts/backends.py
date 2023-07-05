@@ -4,13 +4,17 @@ from datetime import datetime
 from functools import lru_cache
 import openai
 import parser
-from fancy_print import init_print, print_stream, print_latex, loading_animation, fancy_print
+from fancy_print import init_print, print_stream, print_latex, fancy_print
+from spinner import loading_animation_dec
 from collections import OrderedDict
 import custom_logging as log
 from code import execute_code
 from config import script_dir
-from sys import exit
+# from sys import exit
 from typing import Generator
+from time import sleep
+from threading import ThreadError
+from os import _exit as exit
 
 class Meeseeks:
     def __init__(
@@ -65,6 +69,7 @@ class Meeseeks:
             init_print()  # sets text width and rests last_line_num
 
         content_assistant = None
+        parsed_content = None
 
         response = self.get_response(live=self.live, discussion=discussion)
         if self.live:
@@ -83,7 +88,6 @@ class Meeseeks:
                     content_assistant = ''
 
                 elif keep_reply and content_assistant:
-                    pass
                     print_stream(parsed_content)  # Print content as it come
 
         else:
@@ -97,7 +101,7 @@ class Meeseeks:
                         print(fancy_print(text_part))
                         if i < len(latex_blocks):
                             print_latex(latex_blocks[i])
-                else:
+                elif content_assistant:
                     print(fancy_print(parsed_content))
 
 
@@ -235,7 +239,7 @@ class gpt35(Meeseeks):
         if api_key is None:
             from config import open_ai_key as api_key
 
-            if api_key == "":
+            if api_key in ["", "<your-open-ai-api-key>"]:
                 log.error(
                     "In order to use the gpt 3.5 model, you need to set your api_key in `paramters.dat`"
                 )
@@ -251,10 +255,11 @@ class gpt35(Meeseeks):
         self.functions_json = list(map(parser.function_to_gpt_json, functions))
         self.functions = {func.__name__: func for func in functions}
 
+    @loading_animation_dec("Waiting for openai's response ...")
     def get_response(self, live: bool, discussion: list) -> str | Generator:
         # sends the rely request using the openai package
         openai.api_key = self.api_key
-        args = {
+        kwargs = {
             "model": "gpt-3.5-turbo-0613",
             "messages": discussion,
             "temperature": self.temp,
@@ -262,9 +267,34 @@ class gpt35(Meeseeks):
             "stream": self.live,
             "functions": self.functions_json
         }
-        # the function is called indrectly with a loading animation
-        response = loading_animation("Waiting for openai's response ...",
-                                     openai.ChatCompletion.create, args)
+
+        @loading_animation_dec("Waiting {}s before retry...", text_format=["args[0]"])
+        def custom_sleep(seconds):
+            sleep(seconds)
+
+        n_tries = 0
+        response = ''
+        while (n_tries := n_tries + 1) <= 3:
+            try:
+                # the function is called indrectly with a loading animation
+                # response = loading_animation("Waiting for openai's response ...",
+                                        # openai.ChatCompletion.create, kwargs=kwargs)
+                response = openai.ChatCompletion.create(**kwargs)
+                # response = get_response(**kwargs)
+                break
+            except openai.error.APIConnectionError as e:
+                print(f'Failed: ')
+            except RuntimeError:
+                print("mario")
+            except ThreadError:
+                print("luigi")
+            except Exception as e:
+                print(f"Open ai failed to respond: {e}")
+
+            custom_sleep(5)
+
+        if n_tries == 4:
+            exit(1)
 
         if self.live:
 

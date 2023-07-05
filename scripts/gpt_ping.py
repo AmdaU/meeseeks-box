@@ -11,14 +11,24 @@ from datetime import datetime
 from duckduckgo_search import DDGS
 import json
 from itertools import islice
-from fancy_print import loading_animation
+from spinner import loading_animation_dec
 from colorama import Fore, Style
-
+from time import sleep
 
 # Get the path to the directory were this file is located
 history = FileHistory(f"{script_dir}/log/history.txt")
 # Argument parsing ------------------------------------------------------------
 preset_list = list(presets)
+
+# @loading_animation_dec('test')
+# def cus_P(*args):
+    # sleep(*args)
+
+# cus_P(5)
+# print('yo matlo')
+print()
+print(f"\033[A", end='\r')
+
 
 # Parses the command line arguments
 arg_parser = ArgumentParser()
@@ -129,7 +139,8 @@ def list_steps(steps: list[str]):
     "Make a list of necessary step in order to run a complex task"
     log.system(f"steps: {steps}")
 
-def shell_command(command:str):
+# @loading_animation_dec("lol")
+def shell_command_real(command:str):
     "executes the given shell command in bash as is"
     # trims the command to a signle line since loading animation only suppots
     # singles lines
@@ -138,7 +149,8 @@ def shell_command(command:str):
 
     # executes the command (with animation)
     args = {"language": "bash", "code": command, "std_out": True}
-    out = loading_animation(f"running `{command_str}` ...", execute_code, args)
+    # out = loading_animation(f"running `{command_str}` ...", execute_code, args)
+    out = execute_code(**args)
 
     # confirms the command has been run
     print(f'{Fore.GREEN}⣿{Style.RESET_ALL} ran `{command_str}`')
@@ -155,6 +167,10 @@ def shell_command(command:str):
 
     # log.command(f'output was:\n{out}')
     return out
+
+def shell_command(command:str):
+    "executes the given shell command in bash as is"
+    return shell_command_real(command)
 
 functions = [test, wait, shell_command, google_search, read_web_page]
 
@@ -174,7 +190,7 @@ content_assistant = 'dummy'
 # Main discussion loop --------------------------------------------------------
 while True:
     if content_assistant:
-        content_user = prompt("> ",
+        content_user = prompt("›",
                                 history=history,
                                 multiline=args.multiline
                                 )
