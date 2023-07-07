@@ -1,5 +1,5 @@
 #!/bin/sh
 
-script_path=$(dirname $(readlink -f "$0"))
+script_path=$(dirname $(readlink "$0"))
 #source $script_path/.venv/bin/activate 
 $script_path/.venv/bin/python3 $script_path/scripts/gpt_ping.py "$@"

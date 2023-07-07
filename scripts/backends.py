@@ -10,7 +10,7 @@ from collections import OrderedDict
 import custom_logging as log
 from code import execute_code
 from config import script_dir
-# from sys import exit
+from colorama import Fore
 from typing import Generator
 from time import sleep
 from threading import ThreadError
@@ -255,7 +255,6 @@ class gpt35(Meeseeks):
         self.functions_json = list(map(parser.function_to_gpt_json, functions))
         self.functions = {func.__name__: func for func in functions}
 
-    @loading_animation_dec("Waiting for openai's response ...")
     def get_response(self, live: bool, discussion: list) -> str | Generator:
         # sends the rely request using the openai package
         openai.api_key = self.api_key
@@ -272,26 +271,16 @@ class gpt35(Meeseeks):
         def custom_sleep(seconds):
             sleep(seconds)
 
-        n_tries = 0
-        response = ''
-        while (n_tries := n_tries + 1) <= 3:
-            try:
-                # the function is called indrectly with a loading animation
-                # response = loading_animation("Waiting for openai's response ...",
-                                        # openai.ChatCompletion.create, kwargs=kwargs)
-                response = openai.ChatCompletion.create(**kwargs)
-                # response = get_response(**kwargs)
-                break
-            except openai.error.APIConnectionError as e:
-                print(f'Failed: ')
-            except RuntimeError:
-                print("mario")
-            except ThreadError:
-                print("luigi")
-            except Exception as e:
-                print(f"Open ai failed to respond: {e}")
+        @loading_animation_dec("Waitting for open ai's response", trace_failed="{}", trace_format_failed={"type(Ex).__name__"}, trace_color=Fore.YELLOW)
+        def git_it(**kwargs):
+            return openai.ChatCompletion.create(**kwargs)
 
-            custom_sleep(5)
+        n_tries = 0
+        response = None
+        while (n_tries := n_tries + 1) <= 3 and response==None:
+            response = git_it(**kwargs)
+            sleep(1)
+            # custom_sleep(5)
 
         if n_tries == 4:
             exit(1)
