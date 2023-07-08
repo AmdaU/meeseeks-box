@@ -21,16 +21,6 @@ history = FileHistory(f"{script_dir}/log/history.txt")
 # Argument parsing ------------------------------------------------------------
 preset_list = list(presets)
 
-# @loading_animation_dec('test')
-# def cus_P(*args):
-    # sleep(*args)
-
-# cus_P(5)
-# print('yo matlo')
-print()
-print(f"\033[A", end='\r')
-
-
 # Parses the command line arguments
 arg_parser = ArgumentParser()
 
@@ -92,10 +82,10 @@ if args.action:
 live = args.live
 
 def show_image(path:str = None, url:str = None):
-    "Show the image diplayed at `path` or at `url`)"
+    "Show the image located at `path` or at `url`)"
     if path:
         print("showing image, path=", path)
-        subprocess.run(f"kitty +kitten icat path", shell=True)
+        subprocess.run(f"kitty +kitten icat {path}", shell=True)
     elif url:
         print("showing image, url=", url)
         subprocess.run(f"curl -s '{url}' | kitty icat", shell=True)
@@ -117,8 +107,27 @@ def google_search(query:str, num_results:int=4):
 
     return json.dumps(search_results, ensure_ascii=False, indent=4)
 
+
+def get_images(url:str):
+    "gets the all the images urls from a web page"
+    from bs4 import BeautifulSoup
+    import requests
+
+    log.system(f'scrapping {url} ...')
+
+    # Make a request to the webpageurl
+    response = requests.get(url)
+
+    # Create a BeautifulSoup object
+    soup = BeautifulSoup(response.text, 'html.parser')
+    img_tags = soup.find_all('img')
+    urls = [img.get('src') for img in img_tags]
+
+    return [url for url in urls if url is not None]
+
+
 def read_web_page(url:str):
-    """returns the content of a webpage from a url"""
+    """returns the text content of a webpage from a url"""
     from bs4 import BeautifulSoup
     import requests
 
@@ -179,7 +188,7 @@ def shell_command(command:str):
     "executes the given shell command in bash as is"
     return shell_command_real(command)
 
-functions = [show_image, wait, shell_command, google_search, read_web_page]
+functions = [get_images, show_image, wait, shell_command, google_search, read_web_page]
 
 # initiate meeseeks instance
 meeseeks = gpt(
