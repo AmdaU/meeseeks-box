@@ -215,7 +215,7 @@ class Meeseeks:
 
 
 # gpt 3.5 backend -------------------------------------------------------------
-class gpt35(Meeseeks):
+class gpt(Meeseeks):
     endpoint = "https://api.openai.com/v1/chat/completions"
 
     def __init__(
@@ -228,13 +228,14 @@ class gpt35(Meeseeks):
         preset: str = "default",
         discussion: list = None,
         live: bool = False,
-        functions = None
+        functions = None,
+        model = "gpt-3.5-turbo"
     ):
-        super(gpt35, self).__init__(
+        super(gpt, self).__init__(
             temp, length, timeout, preset, discussion, live
         )  # inherits from Meeseeks init
 
-        self.model = "gpt-3.5-turbo"
+        self.model = model
         # Loads open ai api key
         if api_key is None:
             from config import open_ai_key as api_key
@@ -259,7 +260,7 @@ class gpt35(Meeseeks):
         # sends the rely request using the openai package
         openai.api_key = self.api_key
         kwargs = {
-            "model": "gpt-3.5-turbo-0613",
+            "model": self.model,
             "messages": discussion,
             "temperature": self.temp,
             "max_tokens": self.length,

@@ -3,7 +3,7 @@ from prompt_toolkit.history import FileHistory
 from argparse import ArgumentParser
 from code import execute_code
 import parser
-from backends import gpt35
+from backends import gpt
 import custom_logging as log
 from config import script_dir, presets
 from time import sleep
@@ -14,6 +14,7 @@ from itertools import islice
 from spinner import loading_animation_dec
 from colorama import Fore, Style
 from time import sleep
+import subprocess
 
 # Get the path to the directory were this file is located
 history = FileHistory(f"{script_dir}/log/history.txt")
@@ -90,10 +91,16 @@ if args.action:
 
 live = args.live
 
-def test(test_sentence:str):
-    "this function runs tests!"
-    print(f"THIS IS A TEST: {test_sentence}")
-    return 'test succesfull'
+def show_image(path:str = None, url:str = None):
+    "Show the image diplayed at `path` or at `url`)"
+    if path:
+        print("showing image, path=", path)
+        subprocess.run(f"kitty +kitten icat path", shell=True)
+    elif url:
+        print("showing image, url=", url)
+        subprocess.run(f"curl -s '{url}' | kitty icat", shell=True)
+
+    return "**image**"
 
 def wait(n:int):
     "wait for n seconds"
@@ -172,10 +179,10 @@ def shell_command(command:str):
     "executes the given shell command in bash as is"
     return shell_command_real(command)
 
-functions = [test, wait, shell_command, google_search, read_web_page]
+functions = [show_image, wait, shell_command, google_search, read_web_page]
 
 # initiate meeseeks instance
-meeseeks = gpt35(
+meeseeks = gpt(
     preset=args.preset,
     discussion=args.message,
     length=args.response_length,
