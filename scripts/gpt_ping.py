@@ -1,20 +1,12 @@
 from prompt_toolkit import prompt
 from prompt_toolkit.history import FileHistory
 from argparse import ArgumentParser
-from code import execute_code
 import parser
 from backends import gpt
 import custom_logging as log
 from config import script_dir, presets
-from time import sleep
-from datetime import datetime
-from duckduckgo_search import DDGS
-import json
-from itertools import islice
-from spinner import loading_animation_dec
-from colorama import Fore, Style
-from time import sleep
-import subprocess
+from gpt_functions import get_images, show_image, wait, shell_command,\
+    google_search, read_web_page
 
 # Get the path to the directory were this file is located
 history = FileHistory(f"{script_dir}/log/history.txt")
@@ -38,7 +30,8 @@ arg_parser.add_argument(
 arg_parser.add_argument("-T", "--temperature", type=float, default=0)
 arg_parser.add_argument(
     "--live",
-    help='"Live" preview alows the anwser to be seen as it is being generated (experimental)',
+    help='"Live" preview alows the anwser to be seen as it is being generated'
+         '(experimental)',
     action="store_true",
 )
 arg_parser.add_argument("-b", "--backend", type=str, default="gpt3.5")
@@ -63,7 +56,8 @@ arg_parser.add_argument(
 )
 arg_parser.add_argument(
     "--multiline",
-    help="enable mutiline input (`meta+enter` or `Esc` than `enter` to submit)",
+    help="enable mutiline input"
+         "(`meta+enter` or `Esc` than `enter` to submit)",
     default=False,
     action="store_true",
 )
@@ -76,119 +70,14 @@ if args.live:
     log.system("Live feature is experimental, expect buginess")
 if args.action:
     log.danger(
-        "Terminal acces is still experimental, giving acces to your terminal to chat gpt might be very dangerous!"
+        "Terminal acces is still experimental,"
+        "giving acces to your terminal to chat gpt might be very dangerous!"
     )
 
 live = args.live
 
-def show_image(path:str = None, url:str = None):
-    "Show the image located at `path` or at `url`)"
-    if path:
-        print("showing image, path=", path)
-        subprocess.run(f"kitty +kitten icat {path}", shell=True)
-    elif url:
-        print("showing image, url=", url)
-        subprocess.run(f"curl -s '{url}' | kitty icat", shell=True)
-
-    return "**image**"
-
-def wait(n:int):
-    "wait for n seconds"
-    sleep(n)
-    return 'wait over'
-
-def google_search(query:str, num_results:int=4):
-    """Return the results of a google search with their url"""
-    log.system(f'searching for {query} ...')
-    search_results = []
-    results = DDGS().text(query)
-    for item in islice(results, num_results):
-        search_results.append(item)
-
-    return json.dumps(search_results, ensure_ascii=False, indent=4)
-
-
-def get_images(url:str):
-    "gets the all the images urls from a web page"
-    from bs4 import BeautifulSoup
-    import requests
-
-    log.system(f'scrapping {url} ...')
-
-    # Make a request to the webpageurl
-    response = requests.get(url)
-
-    # Create a BeautifulSoup object
-    soup = BeautifulSoup(response.text, 'html.parser')
-    img_tags = soup.find_all('img')
-    urls = [img.get('src') for img in img_tags]
-
-    return [url for url in urls if url is not None]
-
-
-def read_web_page(url:str):
-    """returns the text content of a webpage from a url"""
-    from bs4 import BeautifulSoup
-    import requests
-
-    log.system(f'reading {url} ...')
-
-    # Make a request to the webpageurl
-    response = requests.get(url)
-
-    # Create a BeautifulSoup object
-    soup = BeautifulSoup(response.text, 'html.parser')
-
-    # Find all the text elements in the webpage
-    text_elements = soup.find_all(string=True)
-
-    # Filter out unwanted elements like scripts and styles
-    readable_text = [element.strip() for element in text_elements if element.parent.name in
-    (['div', 'p', ] + [f'h{n}' for n in range(1, 7)])]
-
-    # Join the text elements into a single string
-    readable_text = ' '.join(readable_text)
-
-    return readable_text
-
-def list_steps(steps: list[str]):
-    "Make a list of necessary step in order to run a complex task"
-    log.system(f"steps: {steps}")
-
-# @loading_animation_dec("lol")
-def shell_command_real(command:str):
-    "executes the given shell command in bash as is"
-    # trims the command to a signle line since loading animation only suppots
-    # singles lines
-    command_lines = command.split('\n')
-    command_str= command_lines[0] + "..."*(len(command_lines) > 1)
-
-    # executes the command (with animation)
-    args = {"language": "bash", "code": command, "std_out": True}
-    # out = loading_animation(f"running `{command_str}` ...", execute_code, args)
-    out = execute_code(**args)
-
-    # confirms the command has been run
-    print(f'{Fore.GREEN}⣿{Style.RESET_ALL} ran `{command_str}`')
-
-    # returns sdtout and stderr to chatgpt
-    out_str = out.stdout.decode("utf-8")
-    err_str = out.stderr.decode("utf-8")
-    if err_str == "" and out_str == "":
-        out = "Command was run succesfully!"
-    elif err_str == "" or out_str == "":
-        out = out_str + err_str
-    else:
-        out = out_str + '\n' + err_str
-
-    # log.command(f'output was:\n{out}')
-    return out
-
-def shell_command(command:str):
-    "executes the given shell command in bash as is"
-    return shell_command_real(command)
-
-functions = [get_images, show_image, wait, shell_command, google_search, read_web_page]
+functions = [get_images, show_image, wait, shell_command,
+             google_search, read_web_page]
 
 # initiate meeseeks instance
 meeseeks = gpt(
@@ -207,15 +96,18 @@ content_assistant = 'dummy'
 while True:
     if content_assistant:
         content_user = prompt("›",
-                                history=history,
-                                multiline=args.multiline
-                                )
-        if content_user[0] == "/":
+                              history=history,
+                              multiline=args.multiline
+                              )
+        if not len(content_user):
+            pass
+
+        elif content_user[0] == "/":
             parser.command(content_user, meeseeks=meeseeks,
-                            code_blocks=code_blocks)
+                           code_blocks=code_blocks)
             continue
 
-        meeseeks.tell(content_user)
+        else:
+            meeseeks.tell(content_user)
 
     content_assistant = meeseeks.reply(action_mode=args.action)
-

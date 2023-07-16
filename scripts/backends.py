@@ -1,10 +1,9 @@
 import json
-import subprocess
 from datetime import datetime
 from functools import lru_cache
 import openai
 import parser
-from fancy_print import init_print, print_stream, print_latex, fancy_print
+from fancy_print import init_print, print_stream, print_latex, fancy_print, delete_line
 from spinner import loading_animation_dec
 from collections import OrderedDict
 import custom_logging as log
@@ -81,8 +80,8 @@ class Meeseeks:
                 parsed_content, latex_groups = parser.latex(parsed_content)
                 if latex_groups:
                     print_stream(parsed_content.split('latex_dummy')[0])
-                    print(f"\033[F"*2)
-                    print(f"\033[K"*2)
+                    delete_line(1)
+                    print()
                     print_latex(latex_groups[0])
                     init_print()
                     content_assistant = ''

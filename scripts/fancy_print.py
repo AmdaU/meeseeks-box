@@ -37,7 +37,8 @@ def print_stream(content):
 
     # overides previous lines
     if amount_to_erase:
-        print(f"\033[{amount_to_erase}A", end="\r")
+        delete_line(amount_to_erase)
+        # print(f"\033[{amount_to_erase}A", end="\r")
     for line in lines[-amount_to_print:]:
         print(line)
 
@@ -171,107 +172,7 @@ def loading_animation(loading_text:str, task:Callable, args:list = [], kwargs:di
 
     return result[0]
 
-# def loading_animation_dec(text, animation= "⣾⣽⣻⢿⡿⣟⣯⣷", color = Fore.BLUE, text_format = None, capture_output=True):
-    # def decorator(task):
-        # def wrapper(*args, **kwargs):
-            # """
-            # Make a loading animation while `task` runs with `args` as arguments
-            # """
-
-            # if text_format:
-                # values = []
-                # for i in text_format:
-                    # values.append(eval(i))
-
-                # loading_text = text.format(*values)
-            # else:
-                # loading_text = text
-
-            # # declare a wrapper function that stores the result of the function
-            # result = []
-            # def meta():
-                # result.append(task(*args, **kwargs))
-
-            # loading_text = loading_text.split('\n')[0]
-
-            # if capture_output:
-                # output = io.StringIO()
-                # sys.stdout = output
-
-            # # create the thead
-            # thread = threading.Thread(target=meta)
-            # thread.deamon = True
-            # thread.start()
-
-            # sys.stdout = sys.__stdout__
-            # # Prints loading animation + loading_text until task is over
-            # i = 0
-            # while thread.is_alive():
-                # print(f'\r{color}{animation[i % len(animation)]}'
-                    # f'{Style.RESET_ALL} ' + loading_text, end="")
-                # sleep(0.1)
-                # i+=1
-
-            # #delete message when done
-            # print(f"\033[2K", end="\r")
-
-            # # just making sure
-            # thread.join()
-            # sys.stdout = sys.__stdout__
-
-
-            # return result[0] if len(result) else None
-
-        # return wrapper
-    # return decorator
-
-def loading_animation_dec(text, animation= "⣾⣽⣻⢿⡿⣟⣯⣷", color = Fore.BLUE, text_format = None, capture_output=True):
-    def decorator(task):
-        def wrapper(*args, **kwargs):
-            """
-            Make a loading animation while `task` runs with `args` as arguments
-            """
-
-            if text_format:
-                values = []
-                for i in text_format:
-                    values.append(eval(i))
-
-                loading_text = text.format(*values)
-            else:
-                loading_text = text
-
-            loading_text = loading_text.split('\n')[0]
-
-            kill_animation = threading.Event()
-            def animate():
-                """Prints loading animation + loading_text until task is over"""
-                i = 0
-                print()
-                print()
-                print(f"\033[2A", end="")
-                while not kill_animation.is_set():
-                    print(f'\r{color}{animation[i % len(animation)]}'
-                        f'{Style.RESET_ALL} ' + loading_text, end="")
-                    print(f"\033[2B", end="\r")
-                    sleep(0.1)
-                    print(f"\r\033[2A", end="")
-                    i+=1
-
-                #delete message when done
-                print(f"\033[2K", end="\r")
-
-            # create the thead
-            thread = threading.Thread(target=animate, daemon=True)
-            thread.start()
-
-            result = task(*args, **kwargs)
-
-            kill_animation.set()
-
-            thread.join()
-
-            return result
-
-        return wrapper
-    return decorator
+def delete_line(n):
+    for i in range(n):
+        print(f"\033[A", end="")
+        print(f"\r\033[K", end="\r")

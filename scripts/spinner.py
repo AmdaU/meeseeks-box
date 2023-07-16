@@ -2,6 +2,7 @@ import threading
 from time import sleep
 from colorama import Fore, Style
 from typing import Iterable
+from fancy_print import delete_line
 
 _animation_lines = []
 
@@ -177,9 +178,3 @@ def loading_animation_dec(text: str,
             return result
         return wrapper
     return decorator
-
-def delete_line(n):
-    pass
-    for i in range(n):
-        print(f"\033[A", end="")
-        print(f"\r\033[K", end="\r")
