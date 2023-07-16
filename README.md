@@ -55,8 +55,8 @@ cd messeeks-box
 - [ ] Add a method to load conversation
 - [x] Add a token counter
 - [ ] Add other llm
-- [ ] find a way to display images
-- [ ] Make fancy printing optional
+- [x] find a way to display images (only works with kitty for now)
+- [ ] Make fancy printing optional (glow)
 - [x] Add a reset command 
 - [x] Active local environment automatically 
 - [x] open in markdown editor
@@ -67,7 +67,9 @@ cd messeeks-box
 - Action mode:
     - [x] Fix bug with no `--live` flag
     - [ ] rework
-    - [ ] Use the new builtin function calling api thing instead of whatever jank i had before.
+    - [x] Use the new builtin function calling api thing instead of whatever jank i had before.
+
+
 - Live mode:
 	- [x] make live less bugy
 	- [x] implement code parsing

@@ -1,20 +1,15 @@
 import subprocess
 import platform
 from config import script_dir, enable_latex_to_png
-from colorama import Fore, Style
-from time import sleep
-from collections.abc import Callable
-import threading
-import io
-import sys
 
 style_file = "ressources/style.json"
+
 
 # print the output so that it is  ✨ p r e t t y ✨
 def fancy_print(content):
     global terminal_height, terminal_width
     fancy_out = subprocess.run(
-        [f"glow -s '{script_dir}/{style_file}' -w {terminal_width -4}"],
+        [f"glow -s '{script_dir}/{style_file}' -w {terminal_width -5}"],
         shell=True,
         input=(content).encode("utf-8"),
         stdout=subprocess.PIPE,
@@ -38,7 +33,6 @@ def print_stream(content):
     # overides previous lines
     if amount_to_erase:
         delete_line(amount_to_erase)
-        # print(f"\033[{amount_to_erase}A", end="\r")
     for line in lines[-amount_to_print:]:
         print(line)
 
@@ -104,7 +98,7 @@ def latex2png(latex: str):
     import numpy as np
     plt.rc('text', usetex=True)
     plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}' +\
-                                        '\n'+r'\usepackage{physics}'
+                                          '\n'+r'\usepackage{physics}'
 
     def trim(im, border):
         bg = Image.new(im.mode, im.size, border)
@@ -115,11 +109,12 @@ def latex2png(latex: str):
 
     fig, ax = plt.subplots()
     fig.set_size_inches(20, 3)
-    ax.annotate(latex, (0,0), fontsize=20, ha='center', va='center', color='w')
+    ax.annotate(latex, (0, 0), fontsize=20, ha='center', va='center',
+                color='w')
     ax.axis('off')
     plt.autoscale('tight')
     fig.patch.set_alpha(0)
-    ax.set_facecolor((0,0,0,0))
+    ax.set_facecolor((0, 0, 0, 0))
 
     fig.canvas.draw()
     rgba_buffer = np.array(fig.canvas.renderer.buffer_rgba())
@@ -128,51 +123,22 @@ def latex2png(latex: str):
 
     cropped_image.save(f'{script_dir}/temp/latex.png')
 
-def print_latex(latex:str):
+
+def print_latex(latex: str):
     """
     Renders latex code. If `enable_latex_to_png` is enabled in parameters.dat
     the code is rendered using latex and kitty icat if not it uses pylatexenc
     """
     if enable_latex_to_png:
         latex2png(latex)
-        subprocess.run(f"kitty +kitten icat {script_dir}/temp/latex.png", shell=True)
+        subprocess.run(f"kitty +kitten icat {script_dir}/temp/latex.png",
+                       shell=True)
     else:
         from pylatexenc.latex2text import LatexNodes2Text
         print(LatexNodes2Text().latex_to_text(latex))
 
-def loading_animation(loading_text:str, task:Callable, args:list = [], kwargs:dict = {},
-                      animation = "⣾⣽⣻⢿⡿⣟⣯⣷", color = Fore.BLUE):
-    """
-    Make a loading animation while `task` runs with `args` as arguments
-    """
-    # declare a wrapper function that stores the result of the function
-    result = []
-    def meta():
-        result.append(task(*args, **kwargs))
-
-    loading_text = loading_text.split('\n')[0]
-
-    # create the thead
-    thread = threading.Thread(target=meta)
-    thread.start()
-
-    # Prints loading animation + loading_text until task is over
-    i = 0
-    while thread.is_alive():
-        print(f'\r{color}{animation[i % len(animation)]}'
-              f'{Style.RESET_ALL} ' + loading_text, end="")
-        sleep(0.1)
-        i+=1
-
-    #delete message when done
-    print(f"\033[2K", end="\r")
-
-    # just making sure
-    thread.join()
-
-    return result[0]
 
 def delete_line(n):
     for i in range(n):
-        print(f"\033[A", end="")
-        print(f"\r\033[K", end="\r")
+        print("\033[A", end="")
+        print("\r\033[K", end="\r")

@@ -1,20 +1,20 @@
-from custom_loggin import log
+from code import execute_code
+import custom_logging as log
+from duckduckgo_search import DDGS
+from itertools import islice
+import json
+from spinner import loading_animation_dec
 import subprocess
 from time import sleep
-from duckduckgo_search import DDGS
-import json
-from itertools import islice
-from code import execute_code
-from spinner import loading_animation_dec
 
 
 def show_image(path: str = None, img_url: str = None):
-    "Show the image located at `path` or at `url`)"
+    "Show the image located at `path` or at the image's full url `img_url`)"
     if path:
         log.system("showing image, path=", path)
         subprocess.run(f"kitty +kitten icat {path}", shell=True)
     elif img_url:
-        log.system(r"showing image, url={img_url}")
+        log.system(f"showing image, url={img_url}")
         subprocess.run(f"curl -s '{img_url}' | kitty icat", shell=True)
 
     return "**image**"
@@ -81,9 +81,11 @@ def read_web_page(url: str):
 
     return readable_text
 
+
 def list_steps(steps: list[str]):
     "Make a list of necessary step in order to run a complex task"
     log.system(f"steps: {steps}")
+
 
 @loading_animation_dec(
     text="running `{}`",
@@ -91,7 +93,7 @@ def list_steps(steps: list[str]):
                  "+('...' if len(args[0].split('\\n')) > 1 else '')"],
     trace="ran `{}`",
     trace_format=["args[0]"])
-def shell_command_real(command:str):
+def shell_command_real(command: str):
     "executes the given shell command in bash as is"
 
     out = execute_code("bash", command, std_out=True)
@@ -108,6 +110,7 @@ def shell_command_real(command:str):
 
     return out
 
-def shell_command(command:str):
+
+def shell_command(command: str):
     "executes the given shell command in bash as is"
     return shell_command_real(command)
