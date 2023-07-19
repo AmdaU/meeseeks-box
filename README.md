@@ -62,7 +62,8 @@ cd messeeks-box
 - [x] open in markdown editor
 - [ ] add command to copy code block
 - [x] Add install script and install instruction
-- [x] Fix bugs on Mac
+- [ ] Fix bugs on Mac
+- [ ] Add functions to presets
 
 - Action mode:
     - [x] Fix bug with no `--live` flag
