@@ -7,6 +7,24 @@ import custom_logging as log
 from config import script_dir, presets
 from gpt_functions import get_images, show_image, wait, shell_command,\
     google_search, read_web_page
+from prompt_toolkit.completion import NestedCompleter
+from prompt_toolkit.completion import WordCompleter
+
+completer = WordCompleter(['/exit', '/clear', '/reset', '/get', '/set'])
+
+completer = NestedCompleter.from_nested_dict({
+    '/exit': None,
+    '/clear': None,
+    '/reset': None,
+    '/set': {
+        "model": {"\"gpt-4\"", "\"gpt-3.5-turbo\""},
+        "temp": None},
+    '/get': {"discussion", "temp", "model"},
+    '/save': None,
+    '/exec':None,
+    '/md': None,
+    '/help': None
+})
 
 # Get the path to the directory were this file is located
 history = FileHistory(f"{script_dir}/log/history.txt")
@@ -97,7 +115,8 @@ while True:
     if content_assistant:
         content_user = prompt("›",
                               history=history,
-                              multiline=args.multiline
+                              multiline=args.multiline,
+                              completer=completer
                               )
         if not len(content_user):
             pass
