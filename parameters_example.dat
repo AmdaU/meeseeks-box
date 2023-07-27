@@ -1,2 +1,4 @@
 open_ai_key="<your-open-ai-api-key>"
 enable_latex_to_png=False
+warnings_at_launch_enabled=True
+tips_enabled=True

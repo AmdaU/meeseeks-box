@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 import parser
 from backends import gpt
 import custom_logging as log
-from config import script_dir, presets
+from config import script_dir, presets, warnings_at_launch_enabled, tips_enabled
 from gpt_functions import get_images, show_image, wait, shell_command,\
     google_search, read_web_page
 from prompt_toolkit.completion import NestedCompleter
@@ -82,15 +82,16 @@ arg_parser.add_argument(
 
 args = arg_parser.parse_args()
 
-
-log.system("tip: use /help or /? to get information on available commands")
-if args.live:
-    log.system("Live feature is experimental, expect buginess")
-if args.action:
-    log.danger(
-        "Terminal acces is still experimental,"
-        "giving acces to your terminal to chat gpt might be very dangerous!"
-    )
+if tips_enabled:
+    log.system("tip: use /help or /? to get information on available commands")
+if warnings_at_launch_enabled:
+    if args.live:
+        log.system("Live feature is experimental, expect buginess")
+    if args.action:
+        log.danger(
+            "Terminal acces is still experimental,"
+            "giving acces to your terminal to chat gpt might be very dangerous!"
+        )
 
 live = args.live
 
