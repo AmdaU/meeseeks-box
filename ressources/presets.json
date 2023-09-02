@@ -36,6 +36,14 @@
       }
     ]
   },
+  "webpage summarizer": {
+    "prompt": [
+      {
+        "role": "system",
+        "content": "You will be given the content of webpage to read. Your only task is too summarize the information contained in that webpage in as few words as possible while omitting as little relevent information as possible."
+      }
+    ]
+  },
   "test": {
     "prompt": [
       {

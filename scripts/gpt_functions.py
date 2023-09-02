@@ -6,7 +6,8 @@ import json
 from spinner import loading_animation_dec
 import subprocess
 from time import sleep
-
+from backends import gpt
+from config import presets
 
 def show_image(path: str = None, img_url: str = None):
     "Show the image located at `path` or at the image's full url `img_url`)"
@@ -56,7 +57,7 @@ def get_images(url: str):
 
 
 def read_web_page(url: str):
-    """returns the text content of a webpage from a url"""
+    """returns the summarized text content of a webpage from a url"""
     from bs4 import BeautifulSoup
     import requests
 
@@ -79,7 +80,20 @@ def read_web_page(url: str):
     # Join the text elements into a single string
     readable_text = ' '.join(readable_text)
 
-    return readable_text
+    reader_meeseeks = gpt(
+        preset="webpage summarizer",
+        length=500,
+        temp=0,
+        live=False,
+    )
+
+    reader_meeseeks.tell(readable_text)
+
+    reponse = reader_meeseeks.reply(keep_reply=False)
+
+    del(reader_meeseeks)
+
+    return reponse
 
 
 def list_steps(steps: list[str]):

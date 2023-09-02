@@ -15,6 +15,12 @@ from time import sleep
 from threading import ThreadError
 from os import _exit as exit
 
+
+cost_input = {"gpt-3.5-turbo":0.0015/1000, "gpt-4":0.03/1000}
+cost_output = {"gpt-3.5-turbo":0.002/1000, "gpt-4":0.06/1000}
+
+
+
 class Meeseeks:
     def __init__(
         self,
@@ -33,6 +39,7 @@ class Meeseeks:
         self.length = length
         self.timeout = timeout
         self.live = live
+        self.cost = 0
 
         # preset argument will be overident by discussion
         if discussion:
@@ -115,6 +122,8 @@ class Meeseeks:
         """adds a message to the meeseeks mid-term memory"""
         message_user = {"role": role, "content": message}
         self.discussion.append(message_user)
+        self.cost +=\
+            parser.token_count(message, self.model)*cost_input[self.model]
 
     def save_discussion(self):
         """saves the current discussion along with other info to a file"""
@@ -227,7 +236,7 @@ class gpt(Meeseeks):
         preset: str = "default",
         discussion: list = None,
         live: bool = False,
-        functions = None,
+        functions = [],
         model = "gpt-3.5-turbo"
     ):
         super(gpt, self).__init__(
@@ -266,6 +275,8 @@ class gpt(Meeseeks):
             "stream": self.live,
             "functions": self.functions_json
         }
+        if not len(self.functions):
+            del(kwargs['functions'])
 
         @loading_animation_dec("Waiting {}s before retry...", text_format=["args[0]"])
         def custom_sleep(seconds):
@@ -289,6 +300,7 @@ class gpt(Meeseeks):
 
             def response_content():
                 function_name, function_args = '', ''
+                reponse_token_amount = 0
                 for chunk in response:
                     content = chunk["choices"][0]["delta"]
                     if content.get("function_call"):
@@ -298,6 +310,11 @@ class gpt(Meeseeks):
                     else:
                         chunk_out = content.get("content", "")
                         yield chunk_out
+                    try:
+                        response_token_amout = chunk['usage']['completion_tokens']
+                        self.cost+= response_token_amount*cost_output[self.model]
+                    except:
+                        pass
                 if function_name != '':
                     output = str(self.functions[function_name](**eval(function_args)))
                     self.discussion.append(
@@ -336,6 +353,8 @@ class gpt(Meeseeks):
                         "content": output,
                     })
                 return None
+            response_token_amout = response['usage']['completion_tokens']
+            self.cost+= response_token_amout*cost_output[self.model]
             return message["content"]
 
 

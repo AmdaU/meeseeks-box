@@ -3,6 +3,7 @@ from time import sleep
 from colorama import Fore, Style
 from typing import Iterable
 from fancy_print import delete_line
+import custom_logging as log
 
 _animation_lines = []
 
@@ -121,10 +122,11 @@ def loading_animation_dec(text: str,
             try:
                 result = task(*args, **kwargs)
             except Exception as e:
-                Failed=True
+                Failed = True
                 Ex = e
 
             if Failed:
+                log.error(Ex)
                 if trace_format_failed:
                     values = []
                     for i in trace_format_failed:

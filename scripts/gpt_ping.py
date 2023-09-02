@@ -17,7 +17,7 @@ completer = NestedCompleter.from_nested_dict({
     '/clear': None,
     '/reset': None,
     '/set': {
-        "model": {"\"gpt-4\"", "\"gpt-3.5-turbo\""},
+        "model": {'"gpt-4"', '"gpt-3.5-turbo"'},
         "temp": None},
     '/get': {"discussion", "temp", "model"},
     '/save': None,

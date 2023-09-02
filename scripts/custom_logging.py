@@ -1,5 +1,6 @@
 from loguru import logger
 from sys import stderr
+from config import script_dir
 
 logger.remove()
 logger.level("hint", no=5, color="<yellow>")
@@ -32,6 +33,8 @@ _ = logger.add(
     format="<b><red>ERROR</red></b>: {message}",
     filter=lambda record: record["level"].name == "error",
 )
+
+logger.add(f"{script_dir}/log/errors.log", level="error", rotation="500 MB")
 
 # more "intuitive" fucntion to call the logger
 log_types = ["system", "danger", "error", "command", "hint"]
