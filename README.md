@@ -76,3 +76,7 @@ cd messeeks-box
 	- [x] implement code parsing
     - [ ] fix 'too long line' bug
     - [x] live parsing for 'action' keywords
+
+- General bug fixes:
+    - [ ] rendering `\[ <math> \]` latex environnement causes crash
+    - [ ] text scrolls down too far in *short* terminal

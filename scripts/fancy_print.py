@@ -129,6 +129,7 @@ def print_latex(latex: str):
     Renders latex code. If `enable_latex_to_png` is enabled in parameters.dat
     the code is rendered using latex and kitty icat if not it uses pylatexenc
     """
+    latex = latex.strip('\n')
     if enable_latex_to_png:
         latex2png(latex)
         subprocess.run(f"kitty +kitten icat {script_dir}/temp/latex.png",
