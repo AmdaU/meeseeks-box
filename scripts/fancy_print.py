@@ -1,6 +1,6 @@
 import subprocess
 import platform
-from config import script_dir, enable_latex_to_png
+from config import script_dir
 
 style_file = "ressources/style.json"
 
@@ -124,13 +124,13 @@ def latex2png(latex: str):
     cropped_image.save(f'{script_dir}/temp/latex.png')
 
 
-def print_latex(latex: str):
+def print_latex(latex: str, latex_to_png: bool):
     """
     Renders latex code. If `enable_latex_to_png` is enabled in parameters.dat
     the code is rendered using latex and kitty icat if not it uses pylatexenc
     """
     latex = latex.strip('\n')
-    if enable_latex_to_png:
+    if latex_to_png:
         latex2png(latex)
         subprocess.run(f"kitty +kitten icat {script_dir}/temp/latex.png",
                        shell=True)

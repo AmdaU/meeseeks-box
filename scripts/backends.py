@@ -8,7 +8,7 @@ from spinner import loading_animation_dec
 from collections import OrderedDict
 import custom_logging as log
 from code import execute_code
-from config import script_dir
+from config import script_dir, enable_latex_to_png
 from colorama import Fore
 from typing import Generator
 from time import sleep
@@ -40,6 +40,7 @@ class Meeseeks:
         self.timeout = timeout
         self.live = live
         self.cost = 0
+        self.enable_latex_to_png = enable_latex_to_png
 
         # preset argument will be overident by discussion
         if discussion:
@@ -89,7 +90,7 @@ class Meeseeks:
                     print_stream(parsed_content.split('latex_dummy')[0])
                     delete_line(1)
                     print()
-                    print_latex(latex_groups[0])
+                    print_latex(latex_groups[0], self.enable_latex_to_png)
                     init_print()
                     content_assistant = ''
 

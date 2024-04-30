@@ -18,7 +18,8 @@ completer = NestedCompleter.from_nested_dict({
     '/reset': None,
     '/set': {
         "model": {'"gpt-4"', '"gpt-3.5-turbo"'},
-        "temp": None},
+        "temp": None,
+        "enable_latex_to_png":{"True", "False"}},
     '/get': {"discussion", "temp", "model"},
     '/save': None,
     '/exec':None,
