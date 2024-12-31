@@ -3,7 +3,7 @@ from subprocess import run, CompletedProcess
 from sys import exit
 from code import execute_code
 import custom_logging as log
-from tiktoken import encoding_for_model
+# from tiktoken import encoding_for_model
 from fancy_print import fancy_print
 from config import script_dir
 from os import system
@@ -14,9 +14,9 @@ from collections.abc import Callable
 clear = lambda: system("clear")
 
 
-def token_count(string: str, model: str):
-    encoding = encoding_for_model(model)
-    return len(encoding.encode(string))
+# def token_count(string: str, model: str):
+    # encoding = encoding_for_model(model)
+    # return len(encoding.encode(string))
 
 
 def code(markdown_string: str) -> tuple[str, list[tuple]]:
@@ -172,14 +172,14 @@ def command(command_str: str, meeseeks=None, code_blocks=None) -> None:
 
 def terminal_output(out: CompletedProcess, model: str, keep_lines: int = 10):
     str_out = out.stdout.decode("utf-8")
-    if token_count(str_out, model) > 100:
-        log.system(
-            f"terminal output too long, outputing last {keep_lines} lines"
-        )
-        new_out = run("tail -n", input=out.stdout, shell=True, capture_output=True)
-        return new_out.stdout.decode("utf-8")
-    else:
-        return str_out
+    # if token_count(str_out, model) > 100:
+        # log.system(
+            # f"terminal output too long, outputing last {keep_lines} lines"
+        # )
+        # new_out = run("tail -n", input=out.stdout, shell=True, capture_output=True)
+        # return new_out.stdout.decode("utf-8")
+    # else:
+    return str_out
 
 
 def action(gtp_reply: str) -> tuple[str, str]:

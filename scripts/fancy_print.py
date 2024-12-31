@@ -9,7 +9,8 @@ style_file = "ressources/style.json"
 def fancy_print(content):
     global terminal_height, terminal_width
     fancy_out = subprocess.run(
-        [f"glow -s '{script_dir}/{style_file}' -w {terminal_width -5}"],
+        # [f"glow -s '{script_dir}/{style_file}' -w {terminal_width -5}"],
+        [f"glow -w {terminal_width -5}"],
         shell=True,
         input=(content).encode("utf-8"),
         stdout=subprocess.PIPE,

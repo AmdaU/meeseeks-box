@@ -17,7 +17,7 @@ completer = NestedCompleter.from_nested_dict({
     '/clear': None,
     '/reset': None,
     '/set': {
-        "model": {'"gpt-4"', '"gpt-3.5-turbo"'},
+        "model": {'"gpt-4o"', '"gpt-4o-mini"', '"gpt-4"', '"gpt-3.5-turbo"'},
         "temp": None,
         "enable_latex_to_png":{"True", "False"}},
     '/get': {"discussion", "temp", "model"},
@@ -96,8 +96,10 @@ if warnings_at_launch_enabled:
 
 live = args.live
 
+# functions = [get_images, show_image, wait, shell_command,
+             # google_search, read_web_page]
 functions = [get_images, show_image, wait, shell_command,
-             google_search, read_web_page]
+             read_web_page]
 
 # initiate meeseeks instance
 meeseeks = gpt(

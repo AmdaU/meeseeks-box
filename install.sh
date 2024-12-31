@@ -1,6 +1,7 @@
 #!/bin/bash
 
-cp parameters_example.dat parameters.dat
+if [ ! -f parameters.dat ]; then cp parameters_example.dat parameters.dat; 
+  fi
 
 mkdir log
 touch log/history.txt

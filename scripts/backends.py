@@ -123,8 +123,8 @@ class Meeseeks:
         """adds a message to the meeseeks mid-term memory"""
         message_user = {"role": role, "content": message}
         self.discussion.append(message_user)
-        self.cost +=\
-            parser.token_count(message, self.model)*cost_input[self.model]
+        # self.cost +=\
+            # parser.token_count(message, self.model)*cost_input[self.model]
 
     def save_discussion(self):
         """saves the current discussion along with other info to a file"""
@@ -238,7 +238,7 @@ class gpt(Meeseeks):
         discussion: list = None,
         live: bool = False,
         functions = [],
-        model = "gpt-3.5-turbo"
+        model = "gpt-4o-mini"
     ):
         super(gpt, self).__init__(
             temp, length, timeout, preset, discussion, live
@@ -251,7 +251,7 @@ class gpt(Meeseeks):
 
             if api_key in ["", "<your-open-ai-api-key>"]:
                 log.error(
-                    "In order to use the gpt 3.5 model, you need to set your api_key in `paramters.dat`"
+                    "In order to use chat gpt models, you need to set your api_key in `paramters.dat`"
                 )
                 exit(1)
 
